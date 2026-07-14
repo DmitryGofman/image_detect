@@ -1,0 +1,1350 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#241B4D">
+<title>אקדמיית זיהוי רחפנים — מדריך אינטראקטיבי</title>
+<style>
+/* ============================================================
+   DRONE DETECTION ACADEMY — single-file, offline, RTL Hebrew
+   Palette (proto3 path): deep purple, card, orange action, mint success
+   Labs keep proto4 identity: graph-paper light, dark ink, green/red
+   ============================================================ */
+:root{
+  --bg:#241B4D; --bg2:#1B1440; --card:#352A6E; --card2:#3E3180;
+  --edge:#4a3d92; --ink:#EDE9FB; --ink2:#B7AEE0; --ink3:#8478BE;
+  --orange:#FF9D45; --orange2:#ffb066; --mint:#4BE0B4; --mint2:#7defce;
+  --red:#FF6B6B; --reddeep:#A8341F; --gold:#FFD66B;
+  --lock:#544a86;
+  --lab-paper:#EAF0E6; --lab-line:#C4D2BC; --lab-ink:#23271E; --lab-ink2:#4A4F42;
+  --lab-green:#2E7D32; --lab-red:#C0392B; --lab-accent:#5B6142;
+  --shadow:0 8px 30px rgba(0,0,0,.35);
+  --sys:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans Hebrew","Arial Hebrew",sans-serif;
+  --mono:ui-monospace,"SF Mono","Cascadia Mono","Segoe UI Mono",Menlo,Consolas,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  background:linear-gradient(180deg,#2b2158 0%,var(--bg) 40%,var(--bg2) 100%);
+  background-attachment:fixed;
+  color:var(--ink); font-family:var(--sys); line-height:1.6;
+  -webkit-font-smoothing:antialiased; overflow-x:hidden;
+}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+h1,h2,h3,h4{line-height:1.25;font-weight:800}
+.mono{font-family:var(--mono)}
+.wrap{max-width:640px;margin:0 auto;padding:0 16px 120px}
+
+/* ---------- Header ---------- */
+header{
+  position:sticky;top:0;z-index:40;
+  background:linear-gradient(180deg,rgba(36,27,77,.98),rgba(36,27,77,.86));
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--edge);
+}
+.hbar{max-width:640px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px}
+.logo{display:flex;align-items:center;gap:9px;font-weight:800;font-size:15px;letter-spacing:.2px}
+.logo .badge{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--orange),#ff7d2e);
+  display:grid;place-items:center;box-shadow:0 3px 10px rgba(255,125,46,.4)}
+.logo .badge svg{width:19px;height:19px}
+.hstats{margin-inline-start:auto;display:flex;gap:8px;align-items:center}
+.chip{display:flex;align-items:center;gap:5px;background:var(--card);border:1px solid var(--edge);
+  border-radius:999px;padding:5px 11px;font-size:12.5px;font-weight:700}
+.chip.xp{color:var(--orange)}
+.chip.streak{color:var(--mint)}
+.xpbar{height:4px;background:var(--card);position:relative;overflow:hidden}
+.xpbar>i{position:absolute;inset:0 auto 0 0;width:0;background:linear-gradient(90deg,var(--orange),var(--gold));
+  transition:width .6s cubic-bezier(.2,.8,.2,1)}
+[dir=rtl] .xpbar>i{inset:0 0 0 auto}
+
+/* ---------- Intro ---------- */
+.intro{padding:26px 0 6px;text-align:center}
+.intro .kicker{font-family:var(--mono);font-size:11px;letter-spacing:.28em;color:var(--orange);text-transform:uppercase}
+.intro h1{font-size:26px;margin:10px 0 8px}
+.intro p{color:var(--ink2);font-size:14px;max-width:440px;margin:0 auto}
+.legend{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin:16px 0 4px;font-size:11.5px;color:var(--ink3)}
+.legend span{display:flex;align-items:center;gap:5px}
+.dotm{width:9px;height:9px;border-radius:50%}
+
+/* ---------- Path ---------- */
+.path{position:relative;margin-top:22px;padding-top:6px}
+.spine{position:absolute;top:0;bottom:40px;right:calc(50% - 1.5px);width:3px;
+  background:linear-gradient(180deg,var(--edge),var(--lock) 60%,transparent);border-radius:3px;z-index:0}
+.node{position:relative;z-index:1;display:flex;justify-content:center;margin:0 0 8px}
+.node .stem{position:absolute;top:-8px;width:3px;height:22px;background:var(--edge);right:calc(50% - 1.5px)}
+.orb{width:76px;height:76px;border-radius:50%;display:grid;place-items:center;position:relative;
+  background:var(--card);border:3px solid var(--edge);box-shadow:var(--shadow);transition:transform .15s, box-shadow .2s}
+.orb:active{transform:scale(.94)}
+.orb .ic{width:34px;height:34px}
+.orb .num{position:absolute;top:-6px;inset-inline-start:-6px;width:24px;height:24px;border-radius:50%;
+  background:var(--bg2);border:2px solid var(--edge);font-size:11px;font-weight:800;display:grid;place-items:center;color:var(--ink2)}
+.node.done .orb{background:linear-gradient(135deg,#2f6b57,#276e58);border-color:var(--mint)}
+.node.done .orb .num{border-color:var(--mint);color:var(--mint)}
+.node.current .orb{background:linear-gradient(135deg,var(--orange),#ff7d2e);border-color:var(--gold);
+  box-shadow:0 0 0 6px rgba(255,157,69,.18),var(--shadow);animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 6px rgba(255,157,69,.16),var(--shadow)}50%{box-shadow:0 0 0 12px rgba(255,157,69,.05),var(--shadow)}}
+.node.locked .orb{background:var(--bg2);border-color:var(--lock);opacity:.7}
+.node.locked .orb .ic{opacity:.35;filter:grayscale(1)}
+.node .lockic{position:absolute;bottom:-4px;inset-inline-end:-4px;width:22px;height:22px;border-radius:50%;
+  background:var(--bg2);border:2px solid var(--lock);display:grid;place-items:center}
+.node .label{position:absolute;top:50%;transform:translateY(-50%);width:150px;font-size:13px;font-weight:700;line-height:1.25}
+.node:nth-child(odd) .label{inset-inline-start:calc(50% + 52px)}
+.node:nth-child(even) .label{inset-inline-end:calc(50% + 52px);text-align:end}
+.node .label small{display:block;font-weight:600;color:var(--ink3);font-size:11px;margin-top:2px}
+.node.locked .label{color:var(--ink3)}
+
+/* Boss node */
+.node.boss .orb{width:88px;height:88px;border-radius:20px;background:linear-gradient(135deg,#4a2b6e,#6e2b57);
+  border-color:#c0508f}
+.node.boss.locked .orb{background:var(--bg2);border-color:var(--lock)}
+.node.boss.done .orb{background:linear-gradient(135deg,#6e2b57,#8f2b6e);border-color:var(--gold)}
+.node.boss .tag{position:absolute;top:-14px;left:50%;transform:translateX(-50%);font-family:var(--mono);
+  font-size:9px;letter-spacing:.2em;color:var(--gold);background:var(--bg2);border:1px solid var(--gold);
+  border-radius:6px;padding:2px 7px;white-space:nowrap}
+.node.boss.final .orb{width:98px;height:98px}
+
+/* ---------- Overlay (reader) ---------- */
+.overlay{position:fixed;inset:0;z-index:60;background:var(--bg);display:flex;flex-direction:column;
+  transform:translateY(100%);transition:transform .32s cubic-bezier(.3,.9,.3,1);will-change:transform}
+.overlay.on{transform:none}
+.ovhead{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--edge);
+  background:var(--bg2);position:sticky;top:0;z-index:5}
+.ovhead .x{width:36px;height:36px;border-radius:10px;background:var(--card);display:grid;place-items:center;font-size:20px;flex:0 0 auto}
+.ovhead .t{font-size:15px;font-weight:800;overflow:hidden;text-overflow:ellipsis}
+.ovhead .t small{display:block;font-size:11px;color:var(--ink3);font-family:var(--mono);letter-spacing:.15em}
+.ovprog{margin-inline-start:auto;font-size:12px;color:var(--ink3);font-family:var(--mono);flex:0 0 auto}
+.ovscroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.ovbody{max-width:640px;margin:0 auto;padding:20px 16px 40px}
+
+/* content typography */
+.sec{margin-bottom:26px;animation:fade .4s ease both}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.sec h3{font-size:19px;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.sec h3 .sn{font-family:var(--mono);font-size:12px;color:var(--orange);background:var(--card);border-radius:6px;padding:2px 8px}
+.sec p{color:var(--ink);font-size:15px;margin-bottom:12px}
+.sec p b{color:var(--gold)}
+.sec ul{margin:0 0 12px;padding-inline-start:20px}
+.sec li{margin-bottom:6px;font-size:14.5px}
+.callout{background:var(--card);border:1px solid var(--edge);border-radius:12px;padding:12px 14px;margin:14px 0}
+.callout .lead{font-family:var(--mono);font-size:11px;letter-spacing:.15em;color:var(--mint);margin-bottom:4px}
+.term{border-inline-start:3px solid var(--orange);background:var(--card);border-radius:0 10px 10px 0;padding:10px 13px;margin:14px 0}
+.term b{display:block;font-family:var(--mono);font-size:12px;color:var(--orange);letter-spacing:.05em;margin-bottom:3px}
+.term span{font-size:13.5px;color:var(--ink)}
+.fig{background:var(--card);border:1px solid var(--edge);border-radius:12px;padding:10px;margin:16px 0;text-align:center}
+.fig canvas{max-width:100%;border-radius:8px;display:block;margin:0 auto}
+.fig .cap{font-size:12px;color:var(--ink3);margin-top:8px}
+.num-hi{color:var(--orange);font-weight:800}
+
+/* trap card */
+.trap{border:2px solid var(--red);border-radius:12px;margin:18px 0;overflow:hidden;background:rgba(168,52,31,.14)}
+.trap .th{background:var(--red);color:#2a0d08;font-family:var(--mono);font-weight:700;font-size:11px;letter-spacing:.18em;
+  padding:6px 12px;display:flex;align-items:center;gap:8px}
+.trap .tb{padding:11px 13px;font-size:14px}
+.trap .ask{margin-top:9px;padding-top:9px;border-top:1px dashed rgba(255,107,107,.4);font-weight:700;color:var(--orange2)}
+.trap .ask::before{content:"◀ שאל את הצוות: ";font-family:var(--mono);font-size:11px;color:var(--red);font-weight:700}
+
+/* quiz */
+.quiz{background:var(--card);border:1px solid var(--edge);border-radius:14px;padding:16px;margin:18px 0}
+.quiz .qhead{font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--orange);margin-bottom:4px}
+.quiz .q{font-size:16px;font-weight:700;margin-bottom:12px}
+.opt{display:block;width:100%;text-align:start;background:var(--bg2);border:1.5px solid var(--edge);border-radius:10px;
+  padding:11px 13px;margin-bottom:9px;font-size:14.5px;transition:.15s;color:var(--ink)}
+.opt:hover{border-color:var(--ink3)}
+.opt.correct{border-color:var(--mint);background:rgba(75,224,180,.14);color:var(--mint2)}
+.opt.wrong{border-color:var(--red);background:rgba(255,107,107,.12);color:var(--red)}
+.opt.dim{opacity:.5}
+.expl{font-size:13.5px;color:var(--ink2);background:var(--bg2);border-radius:10px;padding:11px 13px;margin-top:6px;
+  border-inline-start:3px solid var(--mint);display:none}
+.expl.on{display:block;animation:fade .3s ease both}
+
+/* lab */
+.labwrap{margin:20px 0}
+.lab{background:var(--lab-paper);color:var(--lab-ink);border-radius:14px;overflow:hidden;box-shadow:var(--shadow);
+  background-image:linear-gradient(var(--lab-line) 1px,transparent 1px),linear-gradient(90deg,var(--lab-line) 1px,transparent 1px);
+  background-size:22px 22px}
+.lab .labhead{background:var(--lab-ink);color:var(--lab-paper);padding:9px 14px;font-family:var(--mono);font-size:11px;
+  letter-spacing:.16em;display:flex;justify-content:space-between;align-items:center}
+.lab .labhead .st{color:#c9b978}
+.lab .labhead .st.ok{color:var(--mint)}
+.lab .labbody{padding:14px}
+.lab canvas{width:100%;display:block;border-radius:8px;background:#fbfcf9;border:1px solid var(--lab-line);touch-action:none}
+.lab .ctl{margin-top:12px}
+.lab .row{display:flex;align-items:center;gap:10px;margin:9px 0;font-size:13px;font-family:var(--mono)}
+.lab .row label{flex:0 0 auto;min-width:74px;color:var(--lab-ink2)}
+.lab input[type=range]{flex:1;accent-color:var(--lab-accent);height:22px}
+.lab .val{flex:0 0 auto;min-width:56px;text-align:end;font-weight:700;color:var(--lab-ink)}
+.lab .readout{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.lab .stat{background:#fff;border:1px solid var(--lab-line);border-radius:8px;padding:7px 11px;font-family:var(--mono);
+  font-size:12px;flex:1 1 auto;min-width:90px}
+.lab .stat b{display:block;font-size:18px;color:var(--lab-ink)}
+.lab .stat.g b{color:var(--lab-green)}
+.lab .stat.r b{color:var(--lab-red)}
+.lab .verdict{margin-top:10px;padding:10px 12px;border-radius:8px;font-weight:700;font-size:13.5px;text-align:center;font-family:var(--sys)}
+.lab .verdict.g{background:rgba(46,125,50,.15);color:var(--lab-green);border:1.5px solid var(--lab-green)}
+.lab .verdict.r{background:rgba(192,57,43,.12);color:var(--lab-red);border:1.5px solid var(--lab-red)}
+.lab .seg{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.lab .seg button{border:1.5px solid var(--lab-ink2);border-radius:7px;padding:6px 11px;font-family:var(--mono);font-size:12px;background:#fff;color:var(--lab-ink2)}
+.lab .seg button.on{background:var(--lab-ink);color:var(--lab-paper);border-color:var(--lab-ink)}
+.lab .hint{font-size:12px;color:var(--lab-ink2);margin-top:8px;font-family:var(--sys)}
+
+/* manager questions */
+.mgr{background:linear-gradient(135deg,#2d2360,#3a2d78);border:1px solid var(--orange);border-radius:14px;padding:16px;margin:20px 0}
+.mgr h4{font-size:15px;color:var(--orange);margin-bottom:4px;display:flex;align-items:center;gap:7px}
+.mgr .sub{font-size:12px;color:var(--ink3);margin-bottom:12px}
+.mgr .qq{background:var(--bg2);border-radius:10px;padding:11px 13px;margin-bottom:8px;font-size:14px;display:flex;gap:9px;align-items:flex-start}
+.mgr .qq .n{flex:0 0 auto;width:20px;height:20px;border-radius:50%;background:var(--orange);color:var(--bg);font-weight:800;font-size:12px;display:grid;place-items:center;margin-top:1px}
+.mgr .copy{width:100%;margin-top:6px;background:var(--orange);color:var(--bg);font-weight:800;border-radius:10px;padding:11px;font-size:14px}
+.mgr .copy.done{background:var(--mint)}
+
+/* footer nav in reader */
+.ovfoot{border-top:1px solid var(--edge);background:var(--bg2);padding:12px 16px;position:sticky;bottom:0}
+.ovfoot .inner{max-width:640px;margin:0 auto;display:flex;gap:10px}
+.btn{flex:1;border-radius:12px;padding:14px;font-weight:800;font-size:15px;text-align:center;transition:.15s}
+.btn.primary{background:linear-gradient(135deg,var(--orange),#ff7d2e);color:var(--bg2);box-shadow:0 4px 14px rgba(255,125,46,.35)}
+.btn.primary:disabled{background:var(--card);color:var(--ink3);box-shadow:none;cursor:not-allowed}
+.btn.ghost{background:var(--card);color:var(--ink);border:1px solid var(--edge);flex:0 0 auto;padding:14px 18px}
+
+/* progress dots in reader */
+.stepdots{display:flex;gap:6px;justify-content:center;padding:12px 0 4px}
+.stepdots i{width:7px;height:7px;border-radius:50%;background:var(--edge);transition:.2s}
+.stepdots i.on{background:var(--orange);width:20px;border-radius:4px}
+.stepdots i.done{background:var(--mint)}
+
+/* boss sheet */
+.boss-sheet{position:fixed;inset:0;z-index:70;background:rgba(10,7,26,.6);backdrop-filter:blur(3px);
+  display:flex;align-items:flex-end;opacity:0;pointer-events:none;transition:opacity .25s}
+.boss-sheet.on{opacity:1;pointer-events:auto}
+.sheet{background:var(--bg);border-radius:22px 22px 0 0;width:100%;max-width:640px;margin:0 auto;max-height:92vh;
+  display:flex;flex-direction:column;transform:translateY(100%);transition:transform .32s cubic-bezier(.3,.9,.3,1);border:1px solid var(--edge);border-bottom:none}
+.boss-sheet.on .sheet{transform:none}
+.sheet .grip{width:44px;height:5px;border-radius:5px;background:var(--edge);margin:10px auto}
+.sheet .shead{padding:4px 18px 14px;border-bottom:1px solid var(--edge)}
+.sheet .shead .tag{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--gold)}
+.sheet .shead h3{font-size:19px;margin-top:4px}
+.sheet .shead p{font-size:13px;color:var(--ink2);margin-top:6px}
+.chatarea{flex:1;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:12px}
+.msg{max-width:86%;padding:11px 14px;border-radius:14px;font-size:14px;animation:fade .3s ease both}
+.msg.them{align-self:flex-start;background:var(--card);border:1px solid var(--edge);border-bottom-left-radius:4px}
+[dir=rtl] .msg.them{border-bottom-left-radius:14px;border-bottom-right-radius:4px}
+.msg.me{align-self:flex-end;background:linear-gradient(135deg,var(--orange),#ff7d2e);color:var(--bg2);font-weight:600;border-bottom-right-radius:4px}
+[dir=rtl] .msg.me{border-bottom-right-radius:14px;border-bottom-left-radius:4px}
+.msg .who{font-family:var(--mono);font-size:10px;letter-spacing:.1em;opacity:.7;margin-bottom:3px}
+.choices{padding:12px 18px 8px;border-top:1px solid var(--edge);display:flex;flex-direction:column;gap:8px;background:var(--bg2)}
+.choices button{background:var(--card);border:1.5px solid var(--edge);border-radius:12px;padding:13px;text-align:start;font-size:14px;transition:.15s}
+.choices button:hover{border-color:var(--orange);background:var(--card2)}
+.bossresult{padding:20px 18px 26px;text-align:center}
+.scoreRing{width:120px;height:120px;margin:0 auto 12px}
+.bossresult h3{font-size:22px;margin-bottom:6px}
+.bossresult p{color:var(--ink2);font-size:14px;margin-bottom:14px}
+
+/* certificate */
+.cert{background:linear-gradient(135deg,#2d2360,#241B4D);border:2px solid var(--gold);border-radius:16px;padding:24px;text-align:center;margin:16px 0}
+.cert .seal{width:70px;height:70px;margin:0 auto 10px}
+.cert h2{font-size:22px;color:var(--gold)}
+.cert .name{font-size:15px;color:var(--ink2);margin:8px 0}
+.cert .line{height:1px;background:var(--gold);opacity:.4;margin:14px 0}
+
+/* toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);z-index:90;
+  background:var(--mint);color:#08281f;font-weight:800;padding:12px 20px;border-radius:999px;font-size:14px;
+  box-shadow:var(--shadow);opacity:0;transition:.3s;pointer-events:none}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* xp popup */
+.xppop{position:fixed;z-index:95;font-weight:900;font-size:20px;color:var(--gold);pointer-events:none;
+  text-shadow:0 2px 8px rgba(0,0,0,.5);animation:xpfly 1s ease-out forwards}
+@keyframes xpfly{0%{opacity:0;transform:translateY(0) scale(.6)}20%{opacity:1;transform:translateY(-10px) scale(1.1)}100%{opacity:0;transform:translateY(-70px) scale(1)}}
+
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media (min-width:560px){.node .label{font-size:14px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="hbar">
+    <div class="logo">
+      <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="#241B4D" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M5 5l3 3M19 5l-3 3M5 19l3-3M19 19l-3-3M4 4h1M4 4v1M20 4h-1M20 4v1M4 20h1M4 20v-1M20 20h-1M20 20v-1"/></svg></span>
+      <span>אקדמיית זיהוי רחפנים</span>
+    </div>
+    <div class="hstats">
+      <span class="chip xp" id="xpChip">★ 0</span>
+      <span class="chip streak" id="streakChip">🔥 0</span>
+    </div>
+  </div>
+  <div class="xpbar"><i id="xpFill"></i></div>
+</header>
+
+<div class="wrap">
+  <div class="intro">
+    <div class="kicker">מדריך שדה למהנדס־מנהל · אוריינות, לא קוד</div>
+    <h1>לזהות רחפן בווידאו — בזמן אמת, על ה־Edge</h1>
+    <p>מסלול של 9 פרקים ו־3 מבחני החלטה. כל פרק נגמר במעבדה חיה ובשאלות שאתה לוקח לצוות. המטרה: לדעת מה לשאול, איפה נופלים, ומה באמת נמדד.</p>
+    <div class="legend">
+      <span><i class="dotm" style="background:var(--mint)"></i>הושלם</span>
+      <span><i class="dotm" style="background:var(--orange)"></i>פעיל</span>
+      <span><i class="dotm" style="background:var(--lock)"></i>נעול</span>
+      <span><i class="dotm" style="background:#c0508f"></i>מבחן החלטה</span>
+    </div>
+  </div>
+
+  <div class="path" id="path">
+    <div class="spine"></div>
+    <!-- nodes injected -->
+  </div>
+</div>
+
+<!-- Reader overlay -->
+<div class="overlay" id="reader">
+  <div class="ovhead">
+    <button class="x" id="readerClose" aria-label="סגור">✕</button>
+    <div class="t" id="readerTitle">—<small id="readerSub"></small></div>
+    <div class="ovprog" id="readerProg"></div>
+  </div>
+  <div class="ovscroll" id="readerScroll">
+    <div class="ovbody" id="readerBody"></div>
+  </div>
+  <div class="ovfoot">
+    <div class="stepdots" id="stepDots"></div>
+    <div class="inner">
+      <button class="btn ghost" id="prevBtn">◀</button>
+      <button class="btn primary" id="nextBtn">המשך</button>
+    </div>
+  </div>
+</div>
+
+<!-- Boss sheet -->
+<div class="boss-sheet" id="bossSheet">
+  <div class="sheet">
+    <div class="grip"></div>
+    <div class="shead" id="bossHead"></div>
+    <div class="chatarea" id="bossChat"></div>
+    <div class="choices" id="bossChoices"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =================================================================
+   CONTENT — the product, separated from the engine (per spec D3)
+   Numbers below are enriched from the research pass; each chapter:
+   { id, title, icon, short, sections[], quiz[], lab, mgr[] }
+   traps are inline in sections as {trap:{code,body,ask}}
+   ================================================================= */
+"use strict";
+
+/* icon set (inline SVG strings, stroke uses currentColor) */
+const IC = {
+  target:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></svg>',
+  grid:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg>',
+  data:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>',
+  small:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 7V3h4M21 7V3h-4M3 17v4h4M21 17v4h-4"/><circle cx="12" cy="12" r="2"/></svg>',
+  metric:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg>',
+  train:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>',
+  track:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 18c4-10 12 6 16-4"/><circle cx="4" cy="18" r="1.6"/><circle cx="20" cy="14" r="1.6"/></svg>',
+  edge:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="5" width="14" height="14" rx="2"/><path d="M9 9h6v6H9zM5 9H2M5 15H2M22 9h-3M22 15h-3M9 5V2M15 5V2M9 22v-3M15 22v-3"/></svg>',
+  manage:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3v18h18"/><rect x="6" y="12" width="3" height="6"/><rect x="11" y="8" width="3" height="10"/><rect x="16" y="5" width="3" height="13"/></svg>',
+  boss:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 8l3 9h12l3-9-5 4-4-7-4 7-5-4z"/></svg>'
+};
+
+/* CONTENT injected by build step below (window.CHAPTERS, window.BOSSES) */
+</script>
+<script>
+/* ============================ CONTENT ============================ */
+/* helpers to keep data terse */
+const T=(code,body,ask)=>({t:'trap',code,body,ask});
+const D=(b,s)=>({t:'term',b,s});
+const P=(html)=>({t:'p',html});
+const H=(html)=>({t:'h',html});
+const UL=(...items)=>({t:'ul',items});
+const CO=(lead,html)=>({t:'callout',lead,html});
+const FIG=(draw,cap)=>({t:'fig',draw,cap});
+
+const CHAPTERS=[
+/* ---------------- CH1 ---------------- */
+{id:'ch1',icon:'target',title:'היעד: רחפן בפריים',short:'detection מול classification · למה רחפן קשה',lab:'iou',
+ sections:[
+  H('מה בכלל הבעיה'),
+  P('<b>Classification</b> עונה "מה יש בתמונה" — תווית אחת לכל הפריים. <b>Detection</b> עונה "מה, כמה, ואיפה" — כל עצם מקבל <b>תיבה</b> (Bounding Box) ומחלקה. ההבדל נשמע קטן; הוא משנה את כל שרשרת הדאטה, המדדים והכשלים.'),
+  D('BOUNDING BOX','ארבעה מספרים שתוחמים עצם. כל טענה של "המודל טועה" מתחילה בשאלה: התיבה במקום? בגודל? או שאין תיבה בכלל?'),
+  D('ONE-STAGE / TWO-STAGE','משפחה מהירה (YOLO) מול מדויקת-היסטורית (Faster R-CNN). ההחלטה נגזרת מתקציב ה-latency על חומרת היעד — לא מהעדפת הצוות. כל דגמי YOLO מ-v8 והלאה הם anchor-free.'),
+  H('למה רחפן הוא יעד קשה'),
+  P('רחפן הוא <b>קטן, מהיר, ודומה לציפור</b>. הקושי אינו "המודל לא מספיק חכם" אלא פיזיקה: DJI Mavic ברוחב 0.35מ׳ במצלמת 1080p עם שדה־ראייה 60° הוא <span class="num-hi">1.3 פיקסל</span> ב-500מ׳, ו-<span class="num-hi">0.3 פיקסל</span> ב-2ק"מ — פחות מפיקסל. גם רשת מושלמת לא מזהה מה שאין לו פיקסלים.'),
+  P('רק עדשת זום צרה (5°) מביאה את היעד ל-<span class="num-hi">15 פיקסל</span> ב-500מ׳. הסף המעשי לזיהוי אמין בספרות הוא בערך <b>10–15 פיקסל</b>. ובמדד COCO, על אותו מודל בדיוק, AP על עצמים קטנים הוא 17.6 מול 62.4 על גדולים — <b>פי 3.5 פער</b>. רחפן חי בקצה הקשה של הגרף.'),
+  FIG('drawTargetGap','גודל רחפן בפיקסלים כפונקציה של טווח וזווית — האזור האדום הוא "מתחת לסף הזיהוי"'),
+  T('TRAP-06','רחפן בטווח 2 ק"מ הוא ~8 פיקסלים. עוד epochs לא יעזרו אם הרשת מכווצת ל-640px בכניסה. עצמים קטנים = בעיית רזולוציה, עם מחיר latency.','מה גודל העצם הקטן ביותר בפיקסלים, אחרי ה-resize של הרשת?')
+ ],
+ quiz:[
+  {q:'הצוות מדווח "המודל מזהה רחפן ב-2 ק"מ במצלמת 1080p רגילה". מה הדגל האדום?',
+   opts:['ה-mAP בטח נמוך','בטווח הזה הרחפן הוא פחות מפיקסל — פיזית אין מה לזהות','צריך עוד epochs','הצוות השתמש ב-YOLO ישן'],a:1,
+   ex:'0.35מ׳ ב-2ק"מ עם 60° HFOV ≈ 0.3 פיקסל. אין אות. השאלה היא על החיישן/עדשה, לא על המודל.'},
+  {q:'מה ההבדל המהותי בין classification ל-detection מבחינת שרשרת העבודה?',
+   opts:['detection דורש GPU חזק יותר','detection מוסיף "כמה ואיפה" → תיבות → תיוג, מדדים וכשלים אחרים לגמרי','אין הבדל מעשי','classification מדויק יותר תמיד'],a:1,
+   ex:'ברגע שיש "איפה", צריך לתייג תיבות, למדוד IoU, ולהתמודד עם FP במיקום — כל שרשרת אחרת.'},
+  {q:'מהו הסף המעשי המקובל (בפיקסלים) לזיהוי אמין של עצם קטן?',
+   opts:['בערך 1–2 פיקסל','בערך 10–15 פיקסל','בערך 100 פיקסל','לא משנה, המודל מפצה'],a:1,
+   ex:'מתחת ל-~10–15px הזיהוי הופך לא-עקבי מדי לייצור, גם עם המודלים הגדולים.'}
+ ],
+ mgr:['מה גודל העצם הקטן ביותר (בפיקסלים) שאנחנו מתחייבים לזהות, אחרי ה-resize של הרשת?',
+      'האם דרישת הטווח שלנו בכלל אפשרית עם החיישן והעדשה הנוכחיים?',
+      'האם אנחנו פותרים detection או classification — ומי החליט?']
+},
+/* ---------------- CH2 ---------------- */
+{id:'ch2',icon:'grid',title:'תמונה לפני רשת',short:'פיקסל · קונבולוציה · הלבנה של CNN',lab:'kernel',
+ sections:[
+  H('תמונה היא מטריצה'),
+  P('לפני שמדברים על רשתות — תמונה היא <b>מטריצת מספרים</b>. כל פיקסל הוא ערך; תמונת צבע היא 3 מטריצות (R,G,B). חיישן צרכני מוציא <b>8 ביט</b> לערוץ (0–255); חיישני RAW לוכדים <b>10/12/14 ביט</b>. מצלמה יחידה משתמשת בתבנית <b>Bayer (RGGB)</b> ומשחזרת צבע באינטרפולציה.'),
+  D('RGB מול IR','מצלמה תרמית (LWIR) היא <b>ערוץ יחיד</b>, לרוב 640×512, שנלכד ב-14 ביט ונדחס ל-8 ביט ע"י AGC — מיפוי תלוי-סצנה שמשתנה מריצה לריצה. כדי להזין רשת שאומנה על RGB, משכפלים את הערוץ פי 3 (R=G=B) — תאימות, לא מידע.'),
+  H('קונבולוציה: הלבנה שממנה בנויה CNN'),
+  P('קונבולוציה מזיזה <b>קרנל</b> (מטריצה קטנה, בד"כ 3×3) על התמונה ומחשבת ממוצע משוקלל בכל מיקום. זו בדיוק הפעולה שרשת לומדת — רק שהיא לומדת את המספרים בקרנל. השכבה הראשונה של רשת (למשל AlexNet) לומדת בעצמה גלאי-קצוות וכתמי-צבע — בדיוק ה-primitives הקלאסיים.'),
+  UL('<b>טשטוש</b> (blur): ממצע רעש, מוחק פרטים','<b>חידוד</b> (sharpen): מגביר ניגודיות בקצה','<b>Sobel</b>: מחלץ גרדיאנט — קצוות אנכיים/אופקיים'),
+  FIG('drawKernelPreview','אותו קרנל 3×3, אפקטים שונים — במעבדה תריצו זאת חי על רחפן'),
+  H('הגישה הקלאסית: חיסור רקע'),
+  P('לפני CNN, זיהוי רחפן נע נעשה ב-<b>background subtraction</b> (OpenCV MOG2/KNN): מה שזז ביחס לרקע סטטי = "חשוד". זה זול ומהיר, ולכן עדיין משולב בפייפליין.'),
+  T('TRAP-13','חיסור רקע נשבר על <b>מצלמה נעה</b> (PTZ) — כל פאן צובע את כל הפריים כ"תנועה" — ועל <b>ציפורים</b>, שזזות כמו רחפן. תנועה לבדה לא מבדילה מין.','על מצלמה נעה — איך אתם מבדילים תנועת יעד מתנועת מצלמה?'),
+  T('TRAP-08','RGB מול BGR: OpenCV קורא ב-BGR, רוב המשקלים מצפים ל-RGB. היפוך שקט מוריד דיוק ב-7–19% <b>בלי שגיאה</b>. אותו דבר עם נרמול לא-עקבי (0–1 מול mean/std של ImageNet) בין אימון ל-inference.','הנרמול וסדר הערוצים זהים בין train ל-inference? מי אימת?')
+ ],
+ quiz:[
+  {q:'מצלמה תרמית מזינה רשת שאומנה על RGB. מה הפרקטיקה הסטנדרטית?',
+   opts:['להמיר את הרשת ל-1 ערוץ','לשכפל את הערוץ היחיד פי 3 (R=G=B)','לצבוע את התמונה מלאכותית','אי אפשר, צריך רשת אחרת'],a:1,
+   ex:'שכפול ערוץ נותן תאימות צורה (3 ערוצים) אבל לא מוסיף מידע — הפילטרים הצבעוניים הפרה-מאומנים מתבזבזים חלקית.'},
+  {q:'מדוע חיסור רקע (MOG2) נכשל על מצלמת PTZ?',
+   opts:['הוא איטי מדי','כל תזוזת מצלמה נראית כ"תנועה" בכל הפריים','הוא עובד רק בלילה','הוא דורש GPU'],a:1,
+   ex:'האלגוריתם מניח רקע סטטי. פאן/טילט/זום מפעילים foreground על כל הפריים.'},
+  {q:'הצוות מדווח דיוק נמוך במפתיע ב-production למרות mAP טוב במעבדה. מה הכי כדאי לבדוק ראשון?',
+   opts:['להוסיף עוד דאטה','סדר ערוצים (RGB/BGR) ונרמול זהים בין train ל-inference','לעבור ל-YOLO26','להגדיל את הרשת'],a:1,
+   ex:'זו מלכודת preprocessing קלאסית: היפוך ערוצים/נרמול שונה מוריד דיוק בשקט, בלי שום שגיאה.'}
+ ],
+ mgr:['הנרמול וסדר הערוצים (RGB/BGR) זהים בדיוק בין train, validation ו-inference על היעד?',
+      'איזה חלק מהפייפליין עדיין נשען על חיסור רקע — ומה קורה לו כשהמצלמה זזה?',
+      'איזה עומק ביט (8/12/14) יוצא מהחיישן, ואיפה מתבצע ה-AGC?']
+},
+/* ---------------- CH3 ---------------- */
+{id:'ch3',icon:'data',title:'דאטה מווידאו',short:'תיוג · guidelines · Domain Gap',lab:'leak',
+ sections:[
+  H('דאטה הוא המוצר'),
+  P('80% מהפרויקט הוא איסוף, תיוג וניקוי. דאטהסטים ציבוריים לרחפנים קיימים — <b>Anti-UAV</b> (410 רצפי וידאו RGB+IR), <b>DUT Anti-UAV</b> (10,000 תמונות) — אבל ברובם הרחפן הוא <5% משטח הפריים. זה עולם של עצמים קטנים.'),
+  D('ANNOTATION GUIDELINES','מסמך שמגדיר איך מתייגים עצם חתוך, מוסתר, מטושטש: מה הגודל המינימלי לתיוג (~10px), דלי occlusion (מלא / חלקי >30% / כבד <30%), ותיבות צמודות. בלעדיו — רעש תיוג שאף ארכיטקטורה לא תתקן.'),
+  H('כשתיוג לא-מדויק הורג עצמים קטנים'),
+  P('טעות של <b>2 פיקסל</b> בתיבה בגודל 10px מורידה IoU ל-<span class="num-hi">0.47</span> — כבר מתחת לסף 0.5. אותה טעות על תיבה 100px נותנת IoU 0.92. רעש תיוג של ~30% הופך את ה-mAP לחצי. על רחפן, כל פיקסל בתיוג נחשב.'),
+  FIG('drawJitter','אותה טעות של 2px: הרסנית על 10px, זניחה על 100px'),
+  T('TRAP-11','בלי מסמך guidelines, שני מתייגים מתייגים אותו רחפן מטושטש אחרת → רעש שנראה כמו "המודל לא מדויק". זו בעיית דאטה, לא ארכיטקטורה.','יש מסמך annotation guidelines? מי אימת עקביות בין מתייגים?'),
+  H('Domain Gap'),
+  P('מודל שאומן על תמונות אינטרנט/RGB ייכשל על <b>הסנסור שלך, בזווית שלך, בתאורה שלך</b>. Faster R-CNN שאומן על RGB ונבחן על IR תרמי: AP@0.5 יורד ל-0.64, וה-mAP המלא ל-0.32. מעבר תחום עולה בקלות 20–50 נקודות mAP.'),
+  T('TRAP-05','Domain Gap: אחוז גבוה מהדאטה חייב להיות מהסנסור ובתנאי היעד. דמו על דאטה "נקי" יתרסק בשטח.','כמה אחוז מהדאטה צולם בסנסור, בטווח ובתנאי היעד?'),
+  T('TRAP-01','Frame Leakage — החמורה ביותר. פריימים מאותו סרטון גם ב-train וגם ב-test → פריימים כמעט זהים בשני הצדדים → mAP שקרי. הדמו מושלם עד השטח.','החלוקה train/test היא ברמת סרטון/סשן או ברמת פריים?')
+ ],
+ quiz:[
+  {q:'למה חלוקת train/test ברמת פריים (במקום ברמת סרטון) מנפחת את ה-mAP?',
+   opts:['פריימים שכנים כמעט זהים → המודל "ראה" את ה-test באימון','פריימים כבדים מדי','זה לא משנה','test צריך להיות גדול יותר'],a:0,
+   ex:'רקע, תאורה ולעיתים אותו מופע עצם חוזרים בשני הצדדים → דליפת מידע → הערכת דיוק שקרית.'},
+  {q:'טעות תיוג של 2 פיקסל. על איזה עצם היא הרסנית?',
+   opts:['על עצם 100px','על עצם 10px (IoU צונח ל-0.47)','שווה על שניהם','לא משפיע על IoU'],a:1,
+   ex:'2px על 10px = IoU 0.47; על 100px = IoU 0.92. עצמים קטנים רגישים פי כמה לרעש תיוג.'},
+  {q:'המודל אומן על RGB אינטרנטי. מה השאלה הכי חשובה לפני שסומכים על הדמו?',
+   opts:['כמה epochs','כמה מהדאטה צולם בסנסור ובתנאי היעד','איזה GPU','מה גודל ה-batch'],a:1,
+   ex:'Domain Gap: בלי דאטה מהסנסור/טווח/תאורה של היעד, הדיוק במעבדה לא מנבא את השטח.'}
+ ],
+ mgr:['החלוקה train/test היא ברמת סרטון או ברמת פריים? מי אימת שאין דליפה?',
+      'כמה אחוז מדאטת האימון צולם בסנסור, בטווח ובתנאי התאורה של היעד?',
+      'קיים מסמך annotation guidelines? איך נמדדת עקביות בין מתייגים?']
+},
+/* ---------------- CH4 ---------------- */
+{id:'ch4',icon:'small',title:'הבעיה הקטנה',short:'רזולוציה מול טווח · tiling · אנטומיית רשת',lab:'pixel',
+ sections:[
+  H('רזולוציה מול טווח'),
+  P('ראינו בפרק 1: הטווח קובע כמה פיקסלים יש לרחפן. עכשיו הצד השני — הרשת עצמה מכווצת את הפריים (בד"כ ל-640px). רחפן שהיה 20px בפריים המקורי יכול להפוך ל-3px אחרי resize. יש <b>"אזור אבוד"</b> שבו העצם קיים בפריים אבל נעלם ברשת.'),
+  D('TILING','במקום לכווץ פריים 4K ל-640, חותכים אותו ל-<b>אריחים</b> ומריצים על כל אחד. <b>SAHI</b> מעלה AP ב-VisDrone ב-<span class="num-hi">+6.8%</span> בלי אימון מחדש — אבל עולה פי 4–9 בזמן inference.'),
+  H('אנטומיית רשת באינטואיציה'),
+  P('כל גלאי מודרני בנוי מ-3 חלקים:'),
+  UL('<b>Backbone</b> — מחלץ features בסקאלות יורדות (זו הקונבולוציה מפרק 2, מוערמת)','<b>Neck (FPN+PAN)</b> — ממזג סקאלות: FPN מלמעלה-למטה מזריק סמנטיקה, PAN מלמטה-למעלה מחזיר לוקליזציה','<b>Head</b> — מנבא מחלקה + תיבה בכל סקאלה (anchor-free ברוב הדגמים החדשים)'),
+  P('לעצמים קטנים מוסיפים <b>P2 head</b> (stride-4) — כי השכבה הרגילה (stride-8) מכווצת רחפן 8px לתגובה של פיקסל בודד.'),
+  FIG('drawAnatomy','Backbone → Neck (FPN+PAN) → Head — הצינור שכל טענת דיוק עוברת דרכו'),
+  T('TRAP-15','Tiling מעלה דיוק אבל עולה פי 4–9 בזמן. "פשוט נחתוך את הפריים" הוא החלטת latency, לא free lunch.','אם נעבור ל-tiling — מה זה עושה לתקציב ה-latency על חומרת היעד?'),
+  T('TRAP-12','העלאת רזולוציית הכניסה מ-640 ל-1280 מרובעת את החישוב (FLOPs ∝ רזולוציה²). "נגדיל את הרשת" נשמע חינמי — הוא לא.','מה מחיר ה-latency של הגדלת רזולוציית הכניסה שאתם מציעים?')
+ ],
+ quiz:[
+  {q:'רחפן הוא 20px בפריים 4K. הרשת מכווצת ל-640px. מה קורה?',
+   opts:['נשאר 20px','מתכווץ ל~3px ועלול להיעלם','גדל','הרשת מזהה טוב יותר'],a:1,
+   ex:'ה-resize מכווץ בפקטור ~6, והעצם צונח מתחת לסף הזיהוי — ה"אזור האבוד".'},
+  {q:'מה תפקיד ה-Neck (FPN+PAN) ברשת גילוי?',
+   opts:['מחליף את ה-backbone','ממזג סקאלות — סמנטיקה מלמעלה, לוקליזציה מלמטה','מחשב את ה-loss','עושה NMS'],a:1,
+   ex:'FPN מזריק סמנטיקה מלמעלה-למטה; PAN מחזיר אות לוקליזציה מלמטה-למעלה. יחד = "צוואר".'},
+  {q:'הצוות מציע tiling כדי לשפר עצמים קטנים. מה השאלה הנכונה?',
+   opts:['כמה זה יעלה בזמן inference על חומרת היעד','למה לא עשו את זה קודם','האם זה חוקי','איזה צבע האריחים'],a:0,
+   ex:'SAHI מוסיף דיוק אמיתי אך עולה פי 4–9 בזמן — חייבים לבדוק מול תקציב ה-latency.'}
+ ],
+ mgr:['מה גודל הרחפן בפיקסלים *אחרי* ה-resize של הרשת — לא בפריים המקורי?',
+      'אם נעבור ל-tiling/רזולוציה גבוהה — מה המחיר בזמן inference על היעד?',
+      'האם יש P2 head או מנגנון אחר לעצמים קטנים, או שאנחנו מקווים שהרשת "תסתדר"?']
+},
+/* ---------------- CH5 ---------------- */
+{id:'ch5',icon:'metric',title:'מדדים שלא משקרים',short:'IoU · P/R · mAP · FP לשעה',lab:'thresh',
+ sections:[
+  H('השפה של הדיווח'),
+  D('IoU','חפיפה בין תיבת החיזוי לאמת: שטח החיתוך חלקי שטח האיחוד, 0 עד 1. הסף (בד"כ 0.5) קובע מה נחשב "פגיעה".'),
+  D('PRECISION / RECALL','Precision = כמה מההתרעות אמיתיות. Recall = כמה מהעצמים נתפסו. סליידר threshold אחד מזיז את שניהם בכיוונים הפוכים — כל ויכוח על "המודל מפספס" מסתכם כאן.'),
+  P('<b>עקומת PR</b> נבנית ממיון החיזויים לפי ביטחון, וספירה מצטברת של TP/FP. <b>AP</b> = השטח מתחת לעקומה (COCO: ממוצע על 101 נקודות recall). בגילוי <b>אין True Negative</b> — אינסוף מיקומים ריקים — לכן המדדים בנויים רק מ-TP/FP/FN.'),
+  T('TRAP-02','mAP@0.5 ו-mAP@0.5:0.95 הם מדדים שונים שיכולים להיבדל פי 1.35–1.45. "mAP 0.91" בלי סף IoU מוצהר — כמעט תמיד זה ה-0.5 המקל. דגל אדום.','באיזה IoU threshold נמדד ה-mAP, ולמה זה הסף הרלוונטי אלינו?'),
+  H('המדד המבצעי האמיתי'),
+  P('במערכת חיה, המדד הוא <b>התרעות שווא לשעת וידאו רציף</b> — לא mAP על סטילס. החישוב פשוט: FP-לפריים × FPS × 3600. 0.002 FP/פריים ב-25fps = <span class="num-hi">180 התרעות שווא בשעה</span>. מפעיל שמקבל 180 התרעות שווא בשעה מפסיק להאמין למערכת.'),
+  FIG('drawFPhour','אותו מודל, סף ביטחון שונה — precision, recall, ו-FP/שעה זזים יחד'),
+  T('TRAP-03','במערכת מבצעית המדד האמיתי הוא FP/שעה על סצנה ריקה מהיעד — לא mAP על תמונות. mAP גבוה יכול להסתיר מבול התרעות שווא.','מה ה-FP/שעה על שעה של וידאו רציף ריק מהיעד?')
+ ],
+ quiz:[
+  {q:'הצוות מדווח "mAP 0.91". מה חסר?',
+   opts:['שום דבר, מספר מצוין','באיזה סף IoU — 0.5 המקל או 0.5:0.95 המחמיר','כמה תמונות','איזה GPU'],a:1,
+   ex:'בלי סף מוצהר זה כמעט תמיד mAP@0.5. המדד המחמיר יכול להיות נמוך פי 1.4.'},
+  {q:'מודל עם 0.002 FP לפריים רץ ב-25fps. כמה התרעות שווא בשעה?',
+   opts:['בערך 5','בערך 180','בערך 2','אפס'],a:1,
+   ex:'0.002 × 25 × 3600 = 180 לשעה. זה המדד שהמפעיל מרגיש, לא ה-mAP.'},
+  {q:'למה אין True Negative בגילוי עצמים?',
+   opts:['כי המודל תמיד מזהה','כי יש אינסוף מיקומים ריקים אפשריים — TN לא מוגדר','כי TN לא חשוב','יש TN, פשוט לא סופרים'],a:1,
+   ex:'ה"מחלקה השלילית" היא כל תיבה אפשרית שאין בה עצם — כמות עצומה/לא-מוגדרת. לכן המדדים מ-TP/FP/FN בלבד.'}
+ ],
+ mgr:['באיזה סף IoU נמדד ה-mAP, ולמה דווקא הוא הרלוונטי למשימה שלנו?',
+      'מה ה-FP/שעה על וידאו רציף ריק מהיעד — לא mAP על סטילס?',
+      'איזה נקודת עבודה (precision/recall) בחרנו, ומי החליט שזה האיזון הנכון מבצעית?']
+},
+/* ---------------- CH6 ---------------- */
+{id:'ch6',icon:'train',title:'קריאת אימון',short:'loss/LR/overfitting · loss יורד ≠ mAP עולה',lab:'curve',
+ sections:[
+  H('לקרוא גרף אימון'),
+  P('ברירות מחדל שפויות (Ultralytics): <b>lr0≈0.01</b>, warmup של 3 epochs, cosine decay, ו-batch הכי גדול שנכנס לזיכרון (משפר סטטיסטיקת BatchNorm). ה-loss מתפרק ל-3: <b>box</b> (CIoU), <b>cls</b> (BCE), <b>dfl</b> (מיקום כהתפלגות), במשקלים 7.5/0.5/1.5.'),
+  UL('<b>התכנסות בריאה</b>: train ו-val יורדים יחד ומשתטחים','<b>Overfitting</b>: train ממשיך לרדת אבל <b>val מתהפך למעלה</b> (בד"כ סביב epoch 9 על דאטה קטן)','<b>LR גבוה מדי</b>: קפיצות/NaN — לכן יש warmup','<b>Batch קטן מדי</b>: loss רועש, BatchNorm גרוע'),
+  FIG('drawOverfit','train יורד, val מתהפך ב-epoch 9 — נקודת ה-early stopping'),
+  T('TRAP-07','<b>loss יורד ≠ mAP עולה.</b> אפשר לראות val loss משתפר בזמן שה-mAP תקוע (או להפך). ה-loss הוא proxy; המדד שקובע הוא mAP/FP-שעה. אל תאשרו על סמך "ה-loss יורד יפה".','מראים לי loss — מה ה-mAP ו-FP/שעה עשו באותו זמן?'),
+  H('אוגמנטציה: לא כל טריק עוזר לקטן'),
+  P('<b>Mosaic</b> (הדבקת 4 תמונות) היא האוגמנטציה החזקה ביותר לגילוי — אבל היא <b>מכווצת עצמים</b>, ולכן מזיקה לרחפן זעיר, ומכבים אותה ב-10 ה-epochs האחרונים (close_mosaic=10).'),
+  T('TRAP-14','Mosaic ואוגמנטציות שמכווצות עצמים יכולות להוריד רחפן מתחת לסף הזיהוי. אוגמנטציה חזקה אינה תמיד ידידה של העצם הקטן.','אילו אוגמנטציות מופעלות, ומה הן עושות לעצם הקטן ביותר שלנו?')
+ ],
+ quiz:[
+  {q:'ה-train loss וה-val loss יורדים יפה, אבל ב-epoch 9 ה-val מתחיל לעלות. מה זה?',
+   opts:['LR גבוה מדי','Overfitting — נקודת early stopping','Batch גדול מדי','אימון תקין'],a:1,
+   ex:'train יורד, val מתהפך = המודל מתחיל לשנן. עוצרים בתחתית ה-val.'},
+  {q:'הצוות מאשר מודל כי "ה-loss יורד יפה". מה חסר?',
+   opts:['שום דבר','מה ה-mAP ו-FP/שעה עשו — loss הוא רק proxy','איזה LR','גודל ה-batch'],a:1,
+   ex:'loss יורד ≠ mAP עולה. חייבים לראות את המדד המבצעי, לא רק את פונקציית ההפסד.'},
+  {q:'למה mosaic augmentation עלולה להזיק דווקא לרחפן?',
+   opts:['היא איטית','היא מכווצת עצמים → רחפן זעיר צונח מתחת לסף','היא צובעת לא נכון','היא לא רצה על GPU'],a:1,
+   ex:'הדבקת 4 תמונות מקטינה כל עצם; לעצם שכבר קטן זה קטלני. לכן close_mosaic בסוף.'}
+ ],
+ mgr:['מראים לי גרף loss — מה ה-mAP וה-FP/שעה עשו באותו חלון אימון?',
+      'איפה נקודת ה-early stopping, ולמה בחרתם דווקא בה?',
+      'אילו אוגמנטציות פעילות, ומה הן עושות לעצם הקטן ביותר שאנחנו מזהים?']
+},
+/* ---------------- CH7 ---------------- */
+{id:'ch7',icon:'track',title:'מ-detection ל-tracking',short:'Kalman · association · ID switches',lab:'idsw',
+ sections:[
+  H('"יש זיהוי" זה חצי מערכת'),
+  P('גילוי עונה "יש רחפן בפריים הזה". <b>Tracking</b> עונה "זה <u>אותו</u> רחפן כמו קודם". בלי מעקב, אין מסלול, אין מהירות, אין התרעה יציבה. הסטנדרט הוא <b>tracking-by-detection</b>: גלאי בכל פריים + שיוך בין פריימים.'),
+  D('משפחת ה-trackers','<b>SORT</b> = Kalman + IoU + Hungarian (מהיר, נשבר בהסתרה). <b>ByteTrack</b> = משייך גם תיבות בביטחון נמוך (מעולה לקטן/מוסתר). <b>BoT-SORT</b> = ByteTrack + פיצוי תנועת מצלמה — <b>ברירת המחדל ב-Ultralytics</b>, מתאים לרחפנים ולמצלמה נעה.'),
+  D('קלמן באינטואיציה','המסנן מחזיק מצב [מרכז x, y, שטח, יחס, ומהירויות]. <b>Predict</b>: "איפה העצם אמור להיות עכשיו לפי המהירות" (חוסר-הוודאות גדל). <b>Update</b>: "משלב את הניבוי עם המדידה החדשה" (חוסר-הוודאות קטן). זה מה שמאפשר לשרוד 1–2 פספוסי גילוי.'),
+  H('ID Switch'),
+  P('כששני רחפנים חוצים מסלול, ה-tracker עלול <b>להחליף להם זהויות</b> — ID switch. tracker טוב על MOT17 עושה ~150–300 החלפות; גרוע עושה אלפים. החלפת ID אחת יכולה להפוך "רחפן מתקרב" ל"רחפן מתרחק".'),
+  FIG('drawIDswitch','שני מסלולים חוצים — ברעש גבוה ה-IDs מתחלפים בנקודת החיתוך'),
+  T('TRAP-10','"יש זיהוי" אינו מערכת. בלי מעקב יציב, ID switches הופכים מסלול אחד לשניים, ומהירות/כיוון הופכים לרעש. גילוי הוא חצי; השני הוא association.','מה שיעור ה-ID switches שלנו בתרחיש חצייה, ואיך זה משפיע על ההתרעה?'),
+  H('מעקב מפחית התרעות שווא'),
+  P('Tracker מאשר יעד רק אחרי <b>N פריימים רצופים</b> (min_hits, בד"כ 3) — זה מדכא הבזקי-פריים־בודד. המחיר: 3 פריימים ב-25fps = <span class="num-hi">120ms</span> עיכוב לפני התרעה. איזון בין דיכוי FP לבין latency.')
+ ],
+ quiz:[
+  {q:'למה גילוי לבדו (בלי tracking) הוא "חצי מערכת"?',
+   opts:['הוא איטי','בלי שיוך בין פריימים אין מסלול, מהירות או זהות יציבה','הוא לא מדויק','הוא דורש GPU'],a:1,
+   ex:'"יש רחפן" בפריים אחד לא אומר "אותו רחפן". בלי association אין מהירות/כיוון/התרעה יציבה.'},
+  {q:'מהו ID switch ולמה הוא מסוכן?',
+   opts:['החלפת מודל','ה-tracker מחליף זהויות בין שני עצמים → מסלול שגוי','שגיאת רשת','סוג של NMS'],a:1,
+   ex:'בחצייה, החלפת ID יכולה להפוך "מתקרב" ל"מתרחק" — הנתונים המבצעיים משתבשים.'},
+  {q:'אישור יעד אחרי 3 פריימים ב-25fps. מה המחיר?',
+   opts:['אין מחיר','120ms עיכוב לפני התרעה','שיפור דיוק בלבד','פחות זיכרון'],a:1,
+   ex:'3 × 40ms = 120ms. דיכוי FP מצוין, אבל חייבים לוודא שה-latency הזה בתקציב.'}
+ ],
+ mgr:['מה שיעור ה-ID switches בתרחיש חצייה/הסתרה, ואיך מדדנו?',
+      'איזה tracker בחרנו (BoT-SORT? ByteTrack?) ולמה הוא נכון למצלמה/למשימה שלנו?',
+      'כמה פריימים אישור (min_hits) — וכמה latency זה מוסיף לתקציב?']
+},
+/* ---------------- CH8 ---------------- */
+{id:'ch8',icon:'edge',title:'אל ה-Edge',short:'ONNX/TensorRT · quantization · latency',lab:'latency',
+ sections:[
+  H('מהמחשב לחומרת היעד'),
+  P('מודל שאומן ב-PyTorch לא רץ כמו שהוא על ה-edge. השרשרת: <b>PyTorch → ONNX → TensorRT engine</b>, שנקמפל לכל GPU ולכל דיוק בנפרד. TensorRT יכול להאיץ פי 2–5.'),
+  D('Quantization','הורדת דיוק חישוב כדי להאיץ. <b>FP16</b>: כמעט אפס נפילת דיוק. <b>INT8</b>: מהיר יותר אבל נפילה של <span class="num-hi">3–7%</span> mAP — ובמקרה קלאסי מתועד, YOLOv5s צנח מ-mAP 0.36 ל-<b>0.05</b> בגלל כיול גרוע. ה-engine עדיין רץ ומוציא תיבות — הוא פשוט שבור.'),
+  T('TRAP-16','INT8 דורש <b>כיול</b> (calibration) על תמונות מייצגות. כיול גרוע מפיל דיוק בשקט — ודווקא עצמים קטנים (רחפן) נופלים ראשונים, כי האות שלהם קרוב לרצפת הרעש של הקוונטיזציה.','על אילו תמונות כויל ה-INT8, ומדדתם דיוק אחרי הכיול?'),
+  H('תקציב latency'),
+  P('שרשרת אמיתית (Jetson Orin Nano, YOLO11n INT8): preprocess 5.6ms + inference 3.4ms + postprocess/NMS 3.2ms ≈ <span class="num-hi">12ms</span>. אבל מוסיפים capture, tracking, ו-alert. חייבים למדוד את הכל מול דרישת ה-FPS.'),
+  UL('<b>Jetson Orin Nano</b>: ~67 TOPS, 7–25W, ~$249 — YOLOv8n ~60fps','<b>Jetson Orin NX</b>: ~157 TOPS','<b>Jetson AGX Orin</b>: ~275 TOPS','<b>Hailo-8</b>: ~26 TOPS, ~2.5W'),
+  FIG('drawLatencyChain','capture → infer → track → alert מול תקציב FPS — חריגה נצבעת אדום'),
+  T('TRAP-04','"רץ על ה-Jetson ב-42FPS" מדבר על מהירות. אבל <b>האם הדיוק נמדד אחרי ההמרה?</b> latency טוב עם מודל שהתרסק בקוונטיזציה הוא מלכודת.','מדדתם mAP אחרי ההמרה ל-INT8, על חומרת היעד — או רק את ה-FPS?'),
+  T('TRAP-09','FPS נמדד; דיוק לא. שני מספרים נפרדים. מודל מהיר שאיבד דיוק בקוונטיזציה נראה מצוין בדיווח latency ונכשל בשטח.','יש לי מספר FPS ומספר mAP — שניהם נמדדו על אותו engine, על היעד?')
+ ],
+ quiz:[
+  {q:'המרה ל-INT8 האיצה יפה. מה חובה לבדוק?',
+   opts:['רק את ה-FPS','את ה-mAP אחרי ההמרה — INT8 יכול להפיל דיוק בשקט','את הצבע','את גודל הקובץ'],a:1,
+   ex:'FP16 כמעט לא פוגע; INT8 יכול להוריד 3–7% או להתרסק לגמרי עם כיול גרוע. מודדים דיוק על היעד.'},
+  {q:'"רץ על Jetson ב-42FPS". מהו הדגל האדום?',
+   opts:['42 נמוך מדי','המשפט מדבר על מהירות בלבד — איפה מדידת הדיוק אחרי ההמרה?','Jetson חלש','צריך FP32'],a:1,
+   ex:'FPS ודיוק הם שני מספרים. latency טוב עם מודל שהתרסק בקוונטיזציה = מלכודת קלאסית.'},
+  {q:'למה דווקא רחפן זעיר נפגע ראשון בקוונטיזציית INT8 גרועה?',
+   opts:['הוא כבד','האות שלו קרוב לרצפת הרעש של הקוונטיזציה','הוא צבעוני','אין קשר'],a:1,
+   ex:'עצמים קטנים/ביטחון-נמוך הם הכי שבירים כשמורידים דיוק חישוב — הם הקורבן הראשון.'}
+ ],
+ mgr:['מדדתם mAP אחרי ההמרה ל-INT8, על חומרת היעד עצמה — או רק FPS?',
+      'על אילו תמונות כויל ה-INT8, והאם הן מייצגות את תנאי היעד?',
+      'מה תקציב ה-latency המלא (capture→infer→track→alert) מול דרישת ה-FPS?']
+},
+/* ---------------- CH9 ---------------- */
+{id:'ch9',icon:'manage',title:'לנהל את הפרויקט',short:'80% דאטה · flywheel · drift',lab:'gantt',
+ sections:[
+  H('הגאנט האמיתי'),
+  P('אנדרו נג: מפתחי AI מבלים בערך <b>80% מהזמן על דאטה</b> (מספר שחוזר הרבה — התייחסו אליו כאצבע, לא כמדידה). מחקר של Google מצא ש-92% מהפייפליינים סובלים מ"מפלי דאטה". גאנט שמקדיש את רוב הזמן ל"אימון וכיוונון" בנוי הפוך.'),
+  T('TRAP-17','גאנט שבו "אימון" הוא הפעילות הגדולה בנוי הפוך למציאות. אם רוב הזמן לא הולך לדאטה — משהו לא מובן נכון.','איך מתחלק הזמן בגאנט בין דאטה, אימון ואינטגרציה — ולמה?'),
+  H('Data Flywheel'),
+  P('המערכת לא נגמרת בהשקה. <b>Data flywheel</b> (בסגנון Tesla): פורסים → אוספים כשלים אמיתיים → מתייגים ממוקד → מאמנים מחדש → פורסים. <b>Active learning</b> (בחירת הדוגמאות הקשות) חוסך <span class="num-hi">13–60%</span> תיוג מול בחירה אקראית.'),
+  D('כלים','גרסאות דאטה ומודל: <b>DVC</b>, <b>MLflow</b> (Apache, חינם), <b>ClearML</b>, <b>W&B</b>. בלי versioning אי אפשר לשחזר "איזה מודל רץ בשדה בשבוע שעבר".'),
+  H('Drift'),
+  P('מודל פרוס <b>נשחק</b>: דגם רחפן חדש, עונה, מזג אוויר, סנסור חדש. חייבים ניטור והערכה מחדש — לא "פרסנו וזהו".'),
+  FIG('drawFlywheel','גלגל הדאטה: פריסה → איסוף כשלים → תיוג → אימון → פריסה'),
+  T('TRAP-18','לפני שמבקשים "עוד דאטה" — עשיתם <b>error analysis</b>? לרוב 200 דוגמאות כושלות שנצפו ביד שוות יותר מ-10,000 חדשות אקראיות. ובלי ניטור drift, המודל נשחק בשקט.','עשינו error analysis לפני בקשת עוד דאטה? איך אנחנו מנטרים drift בשדה?')
+ ],
+ quiz:[
+  {q:'גאנט שמקדיש 70% מהזמן ל"אימון וכיוונון מודל". מה זה מסמן?',
+   opts:['פרויקט יעיל','הבנה הפוכה — רוב הזמן אמור ללכת לדאטה','חוסר GPU','צוות מנוסה'],a:1,
+   ex:'~80% מהעבודה היא דאטה. גאנט הפוך מסמן שלא הבינו איפה הכובד האמיתי.'},
+  {q:'המודל מפספס. מה עדיף לרוב לפני "בואו נאסוף עוד 10,000 תמונות"?',
+   opts:['להגדיל את הרשת','error analysis על הכשלים הקיימים','להעלות LR','לעבור ל-INT8'],a:1,
+   ex:'ניתוח 200 כשלים אמיתיים מכוון תיקון ממוקד; דאטה אקראי נוסף לרוב פחות יעיל ויקר יותר.'},
+  {q:'מהו Data Flywheel?',
+   opts:['סוג GPU','לולאה: פריסה→איסוף כשלים→תיוג ממוקד→אימון→פריסה','אלגוריתם tracking','שיטת quantization'],a:1,
+   ex:'המערכת משתפרת מהשדה: אוספים את הדוגמאות הקשות שהיא מפספסת ומזינים אותן חזרה.'}
+ ],
+ mgr:['איך מתחלק הזמן בגאנט בין דאטה, אימון ואינטגרציה — והאם זה תואם ל"80% דאטה"?',
+      'עשינו error analysis על הכשלים הקיימים לפני שביקשנו עוד דאטה?',
+      'איך אנחנו מנטרים drift בשדה, ומתי מתוכננת הערכה מחדש?']
+}
+];
+
+/* ---------------- BOSSES (decision trees) ---------------- */
+const BOSSES=[
+{id:'b1',after:'ch5',tag:'בוס 1',title:'Demo Review',
+ intro:'הצוות מציג: "השגנו mAP 0.91 על הדאטהסט. המערכת מוכנה לדמו." אתה בחדר. חשוף את מה שמתחת.',
+ tree:{
+  start:'q1',
+  nodes:{
+   q1:{who:'ראש צוות',text:'הנה התוצאות — mAP 0.91, הכי גבוה שהשגנו. אפשר להתקדם לדמו מול הלקוח?',
+     choices:[
+       {t:'"mAP באיזה סף IoU — 0.5 או 0.5:0.95?"',good:1,to:'q2',fb:'שאלה נכונה. חשפת שהמספר חסר הקשר.'},
+       {t:'"מצוין, בואו נקבע דמו"',good:0,to:'bad1',fb:'קפצת על מספר בלי הקשר.'},
+       {t:'"תגדילו את הרשת ל-0.95"',good:0,to:'bad2',fb:'רדפת אחרי מספר גבוה יותר במקום להבין אותו.'}
+     ]},
+   q2:{who:'ראש צוות',text:'אה... זה mAP@0.5. לא בדקנו את המחמיר.',
+     choices:[
+       {t:'"ואיך חילקתם train/test — ברמת סרטון או פריים?"',good:1,to:'q3',fb:'ישר ללב: חיפוש דליפה.'},
+       {t:'"טוב, 0.5 מספיק"',good:0,to:'bad3',fb:'ויתרת על הסף המחמיר בלי לדעת אם הוא רלוונטי.'}
+     ]},
+   q3:{who:'מהנדס',text:'חילקנו את כל הפריימים אקראית ל-80/20. ככה תמיד עשינו.',
+     choices:[
+       {t:'"זו דליפה — פריימים מאותו סרטון בשני הצדדים. תחלקו ברמת סרטון ותמדדו שוב."',good:2,to:'q4',fb:'זיהית את המלכודת החמורה ביותר (TRAP-01).'},
+       {t:'"בסדר, נמשיך"',good:0,to:'bad4',fb:'פספסת Frame Leakage — ה-0.91 כנראה שקרי.'}
+     ]},
+   q4:{who:'ראש צוות',text:'הרצנו מחדש ברמת סרטון... ה-mAP ירד ל-0.62. וגם — הדמו רץ עם סף ביטחון שלא הצהרנו עליו.',
+     choices:[
+       {t:'"עכשיו יש לנו מספר כן. מה ה-FP/שעה על וידאו ריק בסף הזה?"',good:2,to:'win',fb:'סגרת את המעגל: מדד כן + המדד המבצעי.'},
+       {t:'"0.62 מאכזב, תחזרו כשיש 0.9"',good:0,to:'bad5',fb:'ה-0.62 הוא האמת; דרשת בחזרה את השקר.'}
+     ]},
+   win:{end:'win',title:'חשפת את הדמו',score:100,
+     text:'זיהית שלושה: mAP בלי סף (TRAP-02), Frame Leakage (TRAP-01), וסף ביטחון לא-מוצהר. ה-0.91 היה אשליה; 0.62 עם FP/שעה מדוד הוא בסיס אמיתי לדמו.'},
+   bad1:{end:'lose',title:'הדמו התרסק בשטח',score:20,text:'0.91 היה mAP@0.5 עם Frame Leakage. בשטח המערכת נכשלה, והאמון אבד. תמיד תשאל: איזה סף? איך חולקה הדאטה?'},
+   bad2:{end:'lose',title:'רדפת מספר',score:15,text:'ביקשת 0.95 בלי לדעת ש-0.91 עצמו היה שקרי. מספר גבוה יותר על דליפה הוא פשוט שקר גדול יותר.'},
+   bad3:{end:'lose',title:'עצרת מוקדם',score:35,text:'הסף היה חצי מהתשובה. לא בדקת דליפה — והיא זו שניפחה את הכל.'},
+   bad4:{end:'lose',title:'Frame Leakage עבר',score:30,text:'זו המלכודת החמורה ביותר. פריימים כמעט-זהים בשני הצדדים ניפחו את ה-mAP. בשטח — התרסקות.'},
+   bad5:{end:'lose',title:'דחית את האמת',score:45,text:'0.62 ברמת סרטון הוא המספר האמיתי. דרישה ל-0.9 מחזירה אותם ישר לדליפה.'}
+  }
+ }},
+{id:'b2',after:'ch8',tag:'בוס 2',title:'לקראת פריסה',
+ intro:'הצוות: "המרנו ל-INT8, רץ על ה-Jetson ב-42FPS. מוכנים לפרוס." חשוף מה לא נמדד.',
+ tree:{
+  start:'q1',
+  nodes:{
+   q1:{who:'מהנדס',text:'המרנו ל-TensorRT INT8, 42FPS על Orin NX. עומדים בדרישת ה-30FPS בהרווחה!',
+     choices:[
+       {t:'"מעולה על ה-FPS. מה ה-mAP אחרי ההמרה, על היעד?"',good:2,to:'q2',fb:'הפרדת מהירות מדיוק — בדיוק הנקודה.'},
+       {t:'"42FPS מצוין, פורסים"',good:0,to:'bad1',fb:'אישרת על סמך מהירות בלבד.'},
+       {t:'"תעלו ל-60FPS"',good:0,to:'bad2',fb:'עוד מהירות, אפס מידע על דיוק.'}
+     ]},
+   q2:{who:'מהנדס',text:'ה-mAP? מדדנו לפני ההמרה — היה 0.61. אחרי INT8 לא הרצנו הערכה מלאה.',
+     choices:[
+       {t:'"תריצו הערכה על ה-engine עצמו. INT8 יכול להפיל דיוק בשקט."',good:2,to:'q3',fb:'זיהית את TRAP-04/09.'},
+       {t:'"אם היה 0.61 לפני, זה בסדר"',good:0,to:'bad3',fb:'הנחת שההמרה לא פוגעת — הנחה מסוכנת.'}
+     ]},
+   q3:{who:'מהנדס',text:'הרצנו... mAP צנח ל-0.43. במיוחד על היעדים הקטנים והרחוקים.',
+     choices:[
+       {t:'"על אילו תמונות כיילתם את ה-INT8?"',good:2,to:'win',fb:'ישר לשורש: כיול (TRAP-16).'},
+       {t:'"נחזור ל-FP16"',good:1,to:'win2',fb:'פתרון סביר, אבל לא הבנת את הסיבה.'}
+     ]},
+   win:{end:'win',title:'תפסת את הקריסה השקטה',score:100,text:'FPS היה מצוין; הדיוק התרסק מ-0.61 ל-0.43 בקוונטיזציה — והרחפנים הקטנים נפלו ראשונים. הכיול היה על תמונות לא-מייצגות. עכשיו: כיול נכון או QAT, ומדידה מחדש על היעד.'},
+   win2:{end:'win',title:'עצרת את הפריסה',score:80,text:'חזרה ל-FP16 תשקם את הדיוק — טוב. אבל שווה להבין: הכיול הגרוע הוא ששבר את ה-INT8. בפעם הבאה כיול מייצג יאפשר את המהירות בלי המחיר.'},
+   bad1:{end:'lose',title:'פרסת מודל שבור',score:20,text:'42FPS על מודל שאיבד 30% דיוק בקוונטיזציה. בשטח: רחפנים קטנים לא מזוהים. FPS ודיוק הם שני מספרים — תמיד שניהם.'},
+   bad2:{end:'lose',title:'עוד מהירות, אפס דיוק',score:15,text:'רדפת FPS על מודל שאיש לא בדק את דיוקו אחרי ההמרה. המהירות הייתה אף פעם לא הבעיה.'},
+   bad3:{end:'lose',title:'הנחת שההמרה בטוחה',score:35,text:'INT8 יכול להפיל דיוק לגמרי (מקרה מתועד: 0.36→0.05). "היה טוב לפני" לא אומר כלום על אחרי.'}
+  }
+ }},
+{id:'b3',after:'ch9',tag:'בוס סופי',title:'ועדת התנעה',final:true,
+ intro:'סשן ההתנעה של פרויקט חדש. שלושה אנשי צוות, שלוש הצהרות. חשוף את המלכודות לפני שהן נכנסות ל-baseline.',
+ tree:{
+  start:'q1',
+  nodes:{
+   q1:{who:'מנהל דאטה',text:'הגאנט: שבועיים איסוף דאטה, חודשיים אימון וכיוונון. נשקיע איפה שחשוב.',
+     choices:[
+       {t:'"זה הפוך — 80% מהעבודה היא דאטה. תהפכו את היחס."',good:2,to:'q2',fb:'TRAP-17: גאנט הפוך.'},
+       {t:'"נשמע סביר"',good:0,to:'bad1',fb:'אישרת גאנט הפוך.'}
+     ]},
+   q2:{who:'מהנדס ראייה',text:'נאמן על הדאטהסט הציבורי, נחלק פריימים 80/20, ונמדוד mAP.',
+     choices:[
+       {t:'"חלוקה ברמת סרטון, לא פריים — אחרת דליפה. וכמה מהדאטה מהסנסור שלנו?"',good:2,to:'q3',fb:'TRAP-01 + TRAP-05 בבת אחת.'},
+       {t:'"טוב, mAP זה המדד"',good:0,to:'bad2',fb:'פספסת דליפה ו-domain gap.'}
+     ]},
+   q3:{who:'מהנדס edge',text:'נכווץ ל-INT8 ל-Jetson, נמדוד FPS מול דרישת 30.',
+     choices:[
+       {t:'"ותמדדו mAP אחרי ההמרה, על היעד — לא רק FPS."',good:2,to:'q4',fb:'TRAP-04.'},
+       {t:'"FPS זה מה שחשוב ב-edge"',good:0,to:'bad3',fb:'שכחת שדיוק נמדד בנפרד.'}
+     ]},
+   q4:{who:'ראש הפרויקט',text:'ומה המדד שנדווח להנהלה — mAP?',
+     choices:[
+       {t:'"FP/שעה על וידאו ריק, בנוסף ל-mAP עם סף מוצהר. וגם: איך ננטר drift אחרי פריסה."',good:2,to:'win',fb:'סגרת מדד מבצעי + תחזוקה.'},
+       {t:'"כן, mAP גבוה = הצלחה"',good:0,to:'bad4',fb:'mAP על סטילס אינו המדד המבצעי.'}
+     ]},
+   win:{end:'win',title:'ה-baseline נקי',score:100,text:'חשפת בהתנעה: גאנט הפוך (17), Frame Leakage (01), Domain Gap (05), דיוק-אחרי-המרה (04), והמדד המבצעי FP/שעה (03) — פלוס ניטור drift (18). הפרויקט מתחיל על קרקע מוצקה.'},
+   bad1:{end:'lose',title:'התחלה על חול',score:30,text:'גאנט הפוך מבטיח שהדאטה יהיה מוזנח — והוא 80% מהמערכת. כל השאר ייבנה על בסיס רעוע.'},
+   bad2:{end:'lose',title:'דליפה נכנסה ל-baseline',score:25,text:'חלוקת פריימים + דאטה לא-מהסנסור = mAP שקרי מהיום הראשון. כל החלטה תסתמך על מספר אשלייתי.'},
+   bad3:{end:'lose',title:'edge לא נמדד',score:35,text:'FPS בלי דיוק-אחרי-המרה = אולי תפרוס מודל שהתרסק בקוונטיזציה בלי לדעת.'},
+   bad4:{end:'lose',title:'המדד הלא-נכון',score:45,text:'mAP על סטילס אינו מה שהמפעיל מרגיש. בלי FP/שעה, "הצלחה" בדיווח יכולה להיות כישלון בשטח.'}
+  }
+ }}
+];
+
+/* map: which node id comes after each chapter, in display order */
+const SEQUENCE=['ch1','ch2','ch3','ch4','ch5','b1','ch6','ch7','ch8','b2','ch9','b3'];
+</script>
+<script>
+/* ============================ ENGINE ============================ */
+const LS='da.v1.progress';
+function fresh(){return{xp:0,streakDays:0,lastVisit:null,chapters:{},bosses:{},weakTerms:[]}}
+let S=(()=>{try{return Object.assign(fresh(),JSON.parse(localStorage.getItem(LS)))}catch(e){return fresh()}})();
+function save(){try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}}
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const todayStr=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+
+/* streak on load */
+(function streak(){
+  const t=todayStr();
+  if(S.lastVisit!==t){
+    if(S.lastVisit){
+      const a=new Date(S.lastVisit),b=new Date(t),diff=Math.round((b-a)/864e5);
+      S.streakDays = diff===1 ? (S.streakDays||0)+1 : 1;
+    } else S.streakDays=1;
+    S.lastVisit=t; save();
+  }
+})();
+
+/* ---- canvas setup helper ---- */
+function setup(cv,w,h){
+  const dpr=Math.min(2,window.devicePixelRatio||1);
+  cv.width=w*dpr;cv.height=h*dpr;cv.style.width='100%';cv.style.height='auto';
+  const ctx=cv.getContext('2d');ctx.scale(dpr,dpr);ctx._w=w;ctx._h=h;return ctx;
+}
+function ptr(cv,e,w,h){const r=cv.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width*w,y:(e.clientY-r.top)/r.height*h}}
+
+/* palette for canvas */
+const C={paper:'#fbfcf9',line:'#c4d2bc',ink:'#23271e',ink2:'#4a4f42',green:'#2e7d32',red:'#c0392b',
+  blue:'#2b6cb0',orange:'#d97706',sky:'#dfe9f2',accent:'#5b6142',purple:'#6b5bd6'};
+
+/* ============================ FIGURES ============================ */
+const FIGS={
+  drawTargetGap(cv){const w=560,h=260,ctx=setup(cv,w,h);ctx.fillStyle=C.paper;ctx.fillRect(0,0,w,h);
+    const ox=54,oy=30,gw=w-90,gh=h-70;
+    // axes
+    ctx.strokeStyle=C.ink2;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(ox,oy);ctx.lineTo(ox,oy+gh);ctx.lineTo(ox+gw,oy+gh);ctx.stroke();
+    ctx.fillStyle=C.ink2;ctx.font='11px sans-serif';ctx.textAlign='center';
+    ctx.fillText('טווח (מטר)',ox+gw/2,h-8);
+    ctx.save();ctx.translate(14,oy+gh/2);ctx.rotate(-Math.PI/2);ctx.fillText('פיקסלים',0,0);ctx.restore();
+    // lost zone (<10px)
+    const y10=oy+gh-(10/60)*gh;
+    ctx.fillStyle='rgba(192,57,43,.10)';ctx.fillRect(ox,y10,gw,oy+gh-y10);
+    ctx.strokeStyle=C.red;ctx.setLineDash([4,3]);ctx.beginPath();ctx.moveTo(ox,y10);ctx.lineTo(ox+gw,y10);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle=C.red;ctx.textAlign='left';ctx.fillText('סף זיהוי ~10px',ox+6,y10+14);
+    // two curves 60deg and 5deg, object 0.35m, 1920px
+    function px(range,hfov){return 0.35*1920/(range*hfov)}
+    function plot(hfov,col,lbl){ctx.strokeStyle=col;ctx.lineWidth=2.4;ctx.beginPath();let first=1;
+      for(let r=200;r<=3000;r+=40){const p=Math.min(60,px(r,hfov));const X=ox+((r-200)/2800)*gw;const Y=oy+gh-(p/60)*gh;
+        if(first){ctx.moveTo(X,Y);first=0}else ctx.lineTo(X,Y)}ctx.stroke();
+      ctx.fillStyle=col;ctx.textAlign='left';ctx.font='bold 11px sans-serif';ctx.fillText(lbl,ox+gw-96,plotY(hfov,600));}
+    function plotY(hfov,r){return oy+gh-(Math.min(60,px(r,hfov))/60)*gh-6}
+    plot(0.0873,C.green,'זום 5°');plot(1.0472,C.blue,'רגיל 60°');
+    ctx.font='10px sans-serif';ctx.fillStyle=C.ink2;ctx.textAlign='center';
+    [500,1000,2000,3000].forEach(r=>{const X=ox+((r-200)/2800)*gw;ctx.fillText(r,X,oy+gh+14)});
+  },
+  drawKernelPreview(cv){const w=560,h=150,ctx=setup(cv,w,h);ctx.fillStyle=C.paper;ctx.fillRect(0,0,w,h);
+    const labels=['מקור','טשטוש','חידוד','Sobel'];const bw=120,gap=(w-4*bw)/5;
+    for(let i=0;i<4;i++){const x=gap+i*(bw+gap);drawMiniDrone(ctx,x,20,bw,90,i);
+      ctx.fillStyle=C.ink2;ctx.font='12px sans-serif';ctx.textAlign='center';ctx.fillText(labels[i],x+bw/2,128)}
+  },
+  drawJitter(cv){const w=560,h=200,ctx=setup(cv,w,h);ctx.fillStyle=C.paper;ctx.fillRect(0,0,w,h);
+    // left: 10px box, right: 100px box, both shifted 2px (scaled up)
+    function pair(cx,scale,label,iou,good){
+      const s=10*scale, sh=2*scale;
+      ctx.strokeStyle=C.green;ctx.lineWidth=2;ctx.strokeRect(cx-s/2,70-s/2,s,s);
+      ctx.strokeStyle=C.red;ctx.setLineDash([4,3]);ctx.strokeRect(cx-s/2+sh,70-s/2+sh,s,s);ctx.setLineDash([]);
+      ctx.fillStyle=C.ink;ctx.font='12px sans-serif';ctx.textAlign='center';ctx.fillText(label,cx,150);
+      ctx.fillStyle=good?C.green:C.red;ctx.font='bold 16px monospace';ctx.fillText('IoU '+iou,cx,172);
+    }
+    pair(150,7,'תיבה 10px + טעות 2px',0.47,false);
+    pair(410,1.3,'תיבה 100px + טעות 2px',0.92,true);
+    ctx.fillStyle=C.green;ctx.font='11px sans-serif';ctx.textAlign='left';ctx.fillText('■ אמת',20,24);
+    ctx.fillStyle=C.red;ctx.fillText('▢ תיוג עם טעות',80,24);
+  },
+  drawAnatomy(cv){const w=560,h=220,ctx=setup(cv,w,h);ctx.fillStyle=C.paper;ctx.fillRect(0,0,w,h);
+    const cols=[{x:40,t:'Backbone',s:'חילוץ features'},{x:230,t:'Neck FPN+PAN',s:'מיזוג סקאלות'},{x:420,t:'Head',s:'מחלקה + תיבה'}];
+    cols.forEach((c,ci)=>{
+      for(let i=0;i<4;i++){const bw=90-i*14,bh=20,y=40+i*38;
+        ctx.fillStyle=ci===1?'#e8efe3':'#eef2ea';ctx.strokeStyle=C.accent;ctx.lineWidth=1.4;
+        ctx.fillRect(c.x+(90-bw)/2,y,bw,bh);ctx.strokeRect(c.x+(90-bw)/2,y,bw,bh)}
+      ctx.fillStyle=C.ink;ctx.font='bold 13px sans-serif';ctx.textAlign='center';ctx.fillText(c.t,c.x+45,26);
+      ctx.fillStyle=C.ink2;ctx.font='10px sans-serif';ctx.fillText(c.s,c.x+45,h-14);
+    });
+    ctx.strokeStyle=C.orange;ctx.lineWidth=2;
+    [ [130,90],[320,90] ].forEach(a=>{ctx.beginPath();ctx.moveTo(a[0],110);ctx.lineTo(a[0]+18,110);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(a[0]+18,110);ctx.lineTo(a[0]+11,105);ctx.lineTo(a[0]+11,115);ctx.closePath();ctx.fillStyle=C.orange;ctx.fill()});
+  },
+  drawOverfit(cv){const w=560,h=220,ctx=setup(cv,w,h);ctx.fillStyle=C.paper;ctx.fillRect(0,0,w,h);
+    const tr=[4.8,3.6,2.9,2.3,1.9,1.6,1.35,1.15,0.98,0.84,0.71,0.60,0.50,0.42,0.35,0.29,0.24,0.20,0.17,0.14];
+    const va=[4.9,3.7,3.0,2.5,2.15,1.95,1.80,1.72,1.68,1.70,1.75,1.83,1.93,2.05,2.19,2.35,2.53,2.72,2.93,3.15];
+    plotCurves(ctx,w,h,[{d:tr,c:C.green,l:'train'},{d:va,c:C.red,l:'val'}],5,9);
+  },
+  drawFPhour(cv){const w=560,h=200,ctx=setup(cv,w,h);ctx.fillStyle=C.paper;ctx.fillRect(0,0,w,h);
+    // precision & recall vs threshold
+    const ox=44,oy=20,gw=w-80,gh=h-56;
+    ctx.strokeStyle=C.ink2;ctx.beginPath();ctx.moveTo(ox,oy);ctx.lineTo(ox,oy+gh);ctx.lineTo(ox+gw,oy+gh);ctx.stroke();
+    function curve(fn,col,lbl,ly){ctx.strokeStyle=col;ctx.lineWidth=2.2;ctx.beginPath();
+      for(let i=0;i<=100;i++){const th=i/100,X=ox+th*gw,Y=oy+gh-fn(th)*gh;i?ctx.lineTo(X,Y):ctx.moveTo(X,Y)}ctx.stroke();
+      ctx.fillStyle=col;ctx.font='bold 11px sans-serif';ctx.textAlign='left';ctx.fillText(lbl,ox+gw-70,ly)}
+    curve(th=>0.55+0.44*th,C.blue,'precision',34);
+    curve(th=>0.98-0.55*th*th,C.green,'recall',oy+gh-8);
+    ctx.fillStyle=C.ink2;ctx.font='11px sans-serif';ctx.textAlign='center';ctx.fillText('סף ביטחון →',ox+gw/2,h-8);
+  },
+  drawIDswitch(cv){const w=560,h=200,ctx=setup(cv,w,h);ctx.fillStyle='#0d1030';ctx.fillRect(0,0,w,h);
+    // two crossing paths
+    ctx.strokeStyle='#3b6cd0';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(40,50);ctx.lineTo(520,150);ctx.stroke();
+    ctx.strokeStyle='#e08a3b';ctx.beginPath();ctx.moveTo(40,150);ctx.lineTo(520,50);ctx.stroke();
+    // crossing point ~ center
+    ctx.fillStyle='#ff5b5b';ctx.beginPath();ctx.arc(280,100,7,0,7);ctx.fill();
+    ctx.strokeStyle='#ff5b5b';ctx.setLineDash([3,3]);ctx.strokeRect(250,70,60,60);ctx.setLineDash([]);
+    ctx.fillStyle='#ffb0b0';ctx.font='bold 12px sans-serif';ctx.textAlign='center';ctx.fillText('נקודת חצייה = סיכון ID switch',280,52);
+    ctx.fillStyle='#8fb4ff';ctx.textAlign='left';ctx.fillText('ID 1',30,44);ctx.fillStyle='#f0b98a';ctx.fillText('ID 2',30,166);
+  },
+  drawLatencyChain(cv){const w=560,h=150,ctx=setup(cv,w,h);ctx.fillStyle=C.paper;ctx.fillRect(0,0,w,h);
+    const stages=[['capture',33,'#9fb8d0'],['infer',3.4,'#7fb07f'],['track',5,'#d0b87f'],['alert',2,'#c99']];
+    const tot=stages.reduce((a,s)=>a+s[1],0);const bx=30,bw=w-60,y=54;
+    let x=bx;stages.forEach(s=>{const sw=s[1]/tot*bw;ctx.fillStyle=s[2];ctx.fillRect(x,y,sw-2,34);
+      ctx.fillStyle=C.ink;ctx.font='10px sans-serif';ctx.textAlign='center';
+      if(sw>44){ctx.fillText(s[0],x+sw/2,y+18);ctx.fillText(s[1]+'ms',x+sw/2,y+30)}x+=sw});
+    ctx.fillStyle=C.ink;ctx.font='bold 12px sans-serif';ctx.textAlign='center';
+    ctx.fillText('שרשרת latency — כל חוליה נספרת מול תקציב ה-FPS',w/2,26);
+    ctx.fillStyle=C.ink2;ctx.font='11px monospace';ctx.fillText('סה"כ ≈ '+tot.toFixed(1)+'ms',w/2,120);
+  },
+  drawFlywheel(cv){const w=560,h=240,ctx=setup(cv,w,h);ctx.fillStyle=C.paper;ctx.fillRect(0,0,w,h);
+    const cx=w/2,cy=h/2,R=78;const steps=['פריסה','איסוף כשלים','תיוג ממוקד','אימון מחדש','הערכה'];
+    ctx.strokeStyle=C.accent;ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx,cy,R,0,7);ctx.stroke();
+    steps.forEach((s,i)=>{const a=-Math.PI/2+i*2*Math.PI/steps.length;const x=cx+Math.cos(a)*R,y=cy+Math.sin(a)*R;
+      ctx.fillStyle=C.green;ctx.beginPath();ctx.arc(x,y,7,0,7);ctx.fill();
+      ctx.fillStyle=C.ink;ctx.font='11px sans-serif';ctx.textAlign='center';
+      const lx=cx+Math.cos(a)*(R+30),ly=cy+Math.sin(a)*(R+30);ctx.fillText(s,lx,ly+3)});
+    // arrows around
+    ctx.strokeStyle=C.orange;ctx.lineWidth=2;for(let i=0;i<steps.length;i++){const a=-Math.PI/2+(i+0.5)*2*Math.PI/steps.length;
+      const x=cx+Math.cos(a)*R,y=cy+Math.sin(a)*R;const ta=a+0.3;
+      ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(cx+Math.cos(ta)*R,cy+Math.sin(ta)*R);ctx.stroke()}
+    ctx.fillStyle=C.accent;ctx.font='bold 13px sans-serif';ctx.textAlign='center';ctx.fillText('Data',cx,cy-4);ctx.fillText('Flywheel',cx,cy+12);
+  }
+};
+function plotCurves(ctx,w,h,series,markX,markEpoch){
+  const ox=40,oy=16,gw=w-70,gh=h-46;const max=5,n=series[0].d.length;
+  ctx.strokeStyle=C.ink2;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(ox,oy);ctx.lineTo(ox,oy+gh);ctx.lineTo(ox+gw,oy+gh);ctx.stroke();
+  series.forEach(s=>{ctx.strokeStyle=s.c;ctx.lineWidth=2.2;ctx.beginPath();
+    s.d.forEach((v,i)=>{const X=ox+i/(n-1)*gw,Y=oy+gh-v/max*gh;i?ctx.lineTo(X,Y):ctx.moveTo(X,Y)});ctx.stroke();
+    ctx.fillStyle=s.c;ctx.font='bold 11px sans-serif';ctx.textAlign='left';
+    ctx.fillText(s.l,ox+gw-46,oy+gh-s.d[n-1]/max*gh)});
+  if(markEpoch){const X=ox+markEpoch/(n-1)*gw;ctx.strokeStyle=C.orange;ctx.setLineDash([4,3]);
+    ctx.beginPath();ctx.moveTo(X,oy);ctx.lineTo(X,oy+gh);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle=C.orange;ctx.font='10px sans-serif';ctx.textAlign='center';ctx.fillText('early stop',X,oy+10)}
+  ctx.fillStyle=C.ink2;ctx.font='10px sans-serif';ctx.textAlign='center';ctx.fillText('epochs →',ox+gw/2,h-6);
+}
+function drawMiniDrone(ctx,x,y,w,h,mode){
+  // build small grayscale field with drone, apply kernel by mode
+  const N=28,M=22,img=new Float32Array(N*M);
+  for(let j=0;j<M;j++)for(let i=0;i<N;i++){img[j*N+i]=120+ (Math.sin(i*0.9+j)*10)}
+  // drone X shape center
+  const cx=N/2,cy=M/2;for(let j=0;j<M;j++)for(let i=0;i<N;i++){
+    if(Math.abs((i-cx)-(j-cy))<1.3||Math.abs((i-cx)+(j-cy))<1.3){if(Math.abs(i-cx)<6&&Math.abs(j-cy)<6)img[j*N+i]=235}}
+  let out=img;
+  const K={1:[1,1,1,1,1,1,1,1,1].map(v=>v/9),2:[0,-1,0,-1,5,-1,0,-1,0],3:[-1,0,1,-2,0,2,-1,0,1]};
+  if(mode>0){const k=K[mode];out=new Float32Array(N*M);
+    for(let j=1;j<M-1;j++)for(let i=1;i<N-1;i++){let s=0,idx=0;
+      for(let dj=-1;dj<=1;dj++)for(let di=-1;di<=1;di++){s+=img[(j+dj)*N+(i+di)]*k[idx++]}
+      out[j*N+i]=mode===3?Math.abs(s):s}}
+  const px=w/N,py=h/M;for(let j=0;j<M;j++)for(let i=0;i<N;i++){let v=Math.max(0,Math.min(255,out[j*N+i]));
+    ctx.fillStyle='rgb('+(v|0)+','+(v|0)+','+(v|0)+')';ctx.fillRect(x+i*px,y+j*py,px+0.5,py+0.5)}
+  ctx.strokeStyle=C.line;ctx.strokeRect(x,y,w,h);
+}
+
+/* ============================ LABS ============================ */
+const LABS={
+/* --- IoU Grip --- */
+iou(body,done){
+  body.innerHTML='<canvas></canvas><div class="readout"><div class="stat"><span>IoU</span><b id="iouv">0.00</b></div>'
+    +'<div class="stat"><span>ורדיקט</span><b id="iouverd" style="font-size:14px">גרור את התיבה</b></div></div>'
+    +'<div class="hint">גרור את התיבה הכתומה על צללית הרחפן. שאף ל-IoU ≥ 0.5.</div>';
+  const cv=$('canvas',body),ctx=setup(cv,560,300),w=560,h=300;
+  const gt={x:250,y:120,w:90,h:70};let pr={x:180,y:180,w:90,h:70},drag=false;
+  function iou(a,b){const x1=Math.max(a.x,b.x),y1=Math.max(a.y,b.y),x2=Math.min(a.x+a.w,b.x+b.w),y2=Math.min(a.y+a.h,b.y+b.h);
+    const inter=Math.max(0,x2-x1)*Math.max(0,y2-y1);const uni=a.w*a.h+b.w*b.h-inter;return inter/uni}
+  function draw(){ctx.fillStyle='#eef3ea';ctx.fillRect(0,0,w,h);
+    // drone silhouette
+    ctx.save();ctx.translate(gt.x+gt.w/2,gt.y+gt.h/2);ctx.fillStyle='#9aa59a';
+    for(let a=0;a<4;a++){ctx.save();ctx.rotate(a*Math.PI/2+Math.PI/4);ctx.fillRect(6,-3,26,6);ctx.beginPath();ctx.arc(32,0,7,0,7);ctx.fill();ctx.restore()}
+    ctx.fillRect(-12,-12,24,24);ctx.restore();
+    ctx.strokeStyle=C.green;ctx.lineWidth=2;ctx.setLineDash([5,4]);ctx.strokeRect(gt.x,gt.y,gt.w,gt.h);ctx.setLineDash([]);
+    ctx.fillStyle=C.green;ctx.font='11px sans-serif';ctx.fillText('אמת',gt.x+4,gt.y-4);
+    const v=iou(gt,pr);
+    const x1=Math.max(gt.x,pr.x),y1=Math.max(gt.y,pr.y),x2=Math.min(gt.x+gt.w,pr.x+pr.w),y2=Math.min(gt.y+gt.h,pr.y+pr.h);
+    if(x2>x1&&y2>y1){ctx.fillStyle='rgba(107,91,214,.35)';ctx.fillRect(x1,y1,x2-x1,y2-y1)}
+    ctx.strokeStyle=C.orange;ctx.lineWidth=2.4;ctx.strokeRect(pr.x,pr.y,pr.w,pr.h);
+    ctx.fillStyle=C.orange;ctx.fillText('חיזוי',pr.x+4,pr.y-4);
+    $('#iouv',body).textContent=v.toFixed(2);
+    const vd=$('#iouverd',body);vd.textContent=v>=0.5?'פגיעה ✓':'מפספס';vd.style.color=v>=0.5?C.green:C.red;
+  }
+  function move(e){const p=ptr(cv,e,w,h);pr.x=Math.max(0,Math.min(w-pr.w,p.x-pr.w/2));pr.y=Math.max(0,Math.min(h-pr.h,p.y-pr.h/2));draw();done()}
+  cv.addEventListener('pointerdown',e=>{drag=true;try{cv.setPointerCapture(e.pointerId)}catch(_){}move(e)});
+  cv.addEventListener('pointermove',e=>{if(drag)move(e)});
+  cv.addEventListener('pointerup',()=>drag=false);
+  draw();
+},
+/* --- Kernel Playground --- */
+kernel(body,done){
+  body.innerHTML='<canvas></canvas>'
+    +'<div class="seg" id="kseg">'
+    +'<button class="on" data-k="0">מקור</button><button data-k="1">טשטוש</button>'
+    +'<button data-k="2">חידוד</button><button data-k="3">Sobel X</button><button data-k="4">Sobel Y</button></div>'
+    +'<div class="row"><label>סף mask</label><input type="range" id="kth" min="0" max="255" value="128"><span class="val" id="kthv">128</span></div>'
+    +'<div class="hint">בחר kernel וגרור את הסף. מימין: mask בינארי — כך מחלצים "פיקסל→feature" ביד.</div>';
+  const cv=$('canvas',body),w=560,h=230,ctx=setup(cv,w,h);
+  const N=64,M=48;const base=new Float32Array(N*M);
+  for(let j=0;j<M;j++)for(let i=0;i<N;i++){base[j*N+i]=110+Math.sin(i*0.6)*8+Math.cos(j*0.7)*8+(Math.random()*30-15)}
+  const cx=N/2,cy=M/2;
+  for(let j=0;j<M;j++)for(let i=0;i<N;i++){const dx=i-cx,dy=j-cy;
+    if((Math.abs(dx-dy)<1.6||Math.abs(dx+dy)<1.6)&&Math.abs(dx)<11&&Math.abs(dy)<11)base[j*N+i]=240;
+    if(Math.abs(dx)<3&&Math.abs(dy)<3)base[j*N+i]=250}
+  let mode=0,th=128;
+  const K={1:[1,1,1,1,1,1,1,1,1].map(v=>v/9),2:[0,-1,0,-1,5,-1,0,-1,0],
+           3:[-1,0,1,-2,0,2,-1,0,1],4:[-1,-2,-1,0,0,0,1,2,1]};
+  function conv(){if(mode===0)return base.slice();const k=K[mode];const o=new Float32Array(N*M);
+    for(let j=1;j<M-1;j++)for(let i=1;i<N-1;i++){let s=0,idx=0;for(let dj=-1;dj<=1;dj++)for(let di=-1;di<=1;di++)s+=base[(j+dj)*N+(i+di)]*k[idx++];
+      o[j*N+i]=(mode>=3)?Math.abs(s):s}return o}
+  function draw(){ctx.fillStyle=C.paper;ctx.fillRect(0,0,w,h);const o=conv();
+    const bw=250,px=bw/N,py=(M*px);const y0=14;
+    // processed (left panel in RTL sense) and mask
+    for(let j=0;j<M;j++)for(let i=0;i<N;i++){let v=Math.max(0,Math.min(255,o[j*N+i]));
+      ctx.fillStyle='rgb('+(v|0)+','+(v|0)+','+(v|0)+')';ctx.fillRect(20+i*px,y0+j*px,px+.5,px+.5)}
+    for(let j=0;j<M;j++)for(let i=0;i<N;i++){let v=Math.max(0,Math.min(255,o[j*N+i]));const on=v>=th;
+      ctx.fillStyle=on?'#123':'#eef';ctx.fillRect(290+i*px,y0+j*px,px+.5,px+.5)}
+    ctx.fillStyle=C.ink2;ctx.font='11px sans-serif';ctx.textAlign='center';
+    ctx.fillText('אחרי קונבולוציה',20+bw/2,y0+py+14);ctx.fillText('mask בינארי (סף)',290+bw/2,y0+py+14);
+    ctx.strokeStyle=C.line;ctx.strokeRect(20,y0,bw,py);ctx.strokeRect(290,y0,bw,py);
+  }
+  $('#kseg',body).addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+    $$('#kseg button',body).forEach(x=>x.classList.remove('on'));b.classList.add('on');mode=+b.dataset.k;draw();done()});
+  const sl=$('#kth',body);sl.addEventListener('input',()=>{th=+sl.value;$('#kthv',body).textContent=th;draw();done()});
+  draw();
+},
+/* --- Leakage Splitter --- */
+leak(body,done){
+  body.innerHTML='<canvas></canvas>'
+    +'<div class="seg" id="lseg"><button class="on" data-m="frame">חלוקה ברמת פריים</button><button data-m="video">חלוקה ברמת סרטון</button></div>'
+    +'<div class="readout"><div class="stat"><span>mAP מדווח</span><b id="lmap">—</b></div>'
+    +'<div class="stat"><span>אמין?</span><b id="lhonest" style="font-size:14px">—</b></div></div>'
+    +'<div class="verdict" id="lverd">בחר שיטת חלוקה</div>';
+  const cv=$('canvas',body),w=560,h=200,ctx=setup(cv,w,h);let mode='frame';
+  function draw(){ctx.fillStyle=C.paper;ctx.fillRect(0,0,w,h);
+    const rows=6,fpr=10,y0=16,rh=26,x0=70,fw=(w-x0-16)/fpr;
+    ctx.fillStyle=C.ink2;ctx.font='11px sans-serif';ctx.textAlign='right';
+    for(let r=0;r<rows;r++){const y=y0+r*rh;ctx.fillStyle=C.ink2;ctx.fillText('סרטון '+(r+1),x0-6,y+15);
+      for(let f=0;f<fpr;f++){let test;
+        if(mode==='frame')test=((r*fpr+f)%5===0);else test=(r>=4);
+        ctx.fillStyle=test?'#e0a03b':'#7fae7f';ctx.fillRect(x0+f*fw,y,fw-2,rh-6);}
+    }
+    ctx.textAlign='left';ctx.fillStyle='#7fae7f';ctx.fillText('■ train',x0,h-8);
+    ctx.fillStyle='#e0a03b';ctx.fillText('■ test',x0+70,h-8);
+    if(mode==='frame'){ctx.fillStyle=C.red;ctx.font='11px sans-serif';ctx.textAlign='right';ctx.fillText('פריימי test מפוזרים בתוך אותם סרטונים של train →דליפה',w-16,h-8)}
+  }
+  $('#lseg',body).addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+    $$('#lseg button',body).forEach(x=>x.classList.remove('on'));b.classList.add('on');mode=b.dataset.m;draw();
+    const fake=mode==='frame';
+    $('#lmap',body).textContent=fake?'0.91':'0.62';$('#lmap',body).style.color=fake?C.red:C.green;
+    const hn=$('#lhonest',body);hn.textContent=fake?'לא — מנופח':'כן';hn.style.color=fake?C.red:C.green;
+    const vd=$('#lverd',body);vd.className='verdict '+(fake?'r':'g');
+    vd.textContent=fake?'0.91 שקרי: פריימים כמעט-זהים בשני הצדדים':'0.62 אמין: אף סרטון לא חוצה את הגבול';done()});
+  draw();
+},
+/* --- Pixel Budget --- */
+pixel(body,done){
+  body.innerHTML='<canvas></canvas>'
+    +'<div class="row"><label>טווח</label><input type="range" id="prng" min="200" max="3000" step="50" value="800"><span class="val" id="prngv">800מ׳</span></div>'
+    +'<div class="readout"><div class="stat"><span>בפריים 1080p</span><b id="pcap">—</b></div>'
+    +'<div class="stat"><span>אחרי resize 640</span><b id="pres">—</b></div></div>'
+    +'<div class="verdict" id="pverd">—</div>'
+    +'<div class="hint">רחפן 0.35מ׳, מצלמה 60° HFOV. הרשת מכווצת ל-640px — כאן נולד ה"אזור האבוד".</div>';
+  const cv=$('canvas',body),w=560,h=170,ctx=setup(cv,w,h);let rng=800;
+  function calc(r){const cap=0.35*1920/(r*1.0472);return{cap,res:cap*640/1920}}
+  function draw(){ctx.fillStyle='#dfe9f2';ctx.fillRect(0,0,w,h);
+    const {cap,res}=calc(rng);
+    // draw drone at res size (scaled x6 for visibility) vs 10px threshold
+    ctx.fillStyle=C.ink2;ctx.font='11px sans-serif';ctx.textAlign='center';
+    ctx.fillText('גודל אחרי resize (מוגדל ×8 להמחשה)',w/2,20);
+    const s=Math.max(1,res)*8;ctx.fillStyle=res>=10?C.green:C.red;
+    ctx.save();ctx.translate(w/2,90);for(let a=0;a<4;a++){ctx.save();ctx.rotate(a*Math.PI/2+Math.PI/4);ctx.fillRect(s*0.2,-s*0.06,s*0.5,s*0.12);ctx.restore()}ctx.fillRect(-s*0.2,-s*0.2,s*0.4,s*0.4);ctx.restore();
+    // threshold ring 10px*8
+    ctx.strokeStyle=C.red;ctx.setLineDash([4,3]);ctx.beginPath();ctx.arc(w/2,90,40,0,7);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle=C.red;ctx.font='10px sans-serif';ctx.fillText('סף ~10px',w/2,148);
+  }
+  const sl=$('#prng',body);
+  function up(){rng=+sl.value;$('#prngv',body).textContent=rng+'מ׳';const {cap,res}=calc(rng);
+    $('#pcap',body).textContent=cap.toFixed(1)+'px';$('#pres',body).textContent=res.toFixed(1)+'px';
+    const vd=$('#pverd',body);const ok=res>=10;vd.className='verdict '+(ok?'g':'r');
+    vd.textContent=ok?'מעל הסף — ניתן לזיהוי':'מתחת לסף — נעלם ברשת';draw();done()}
+  sl.addEventListener('input',up);up();
+},
+/* --- Threshold Playground --- */
+thresh(body,done){
+  body.innerHTML='<canvas></canvas>'
+    +'<div class="row"><label>סף ביטחון</label><input type="range" id="tth" min="10" max="90" value="45"><span class="val" id="tthv">0.45</span></div>'
+    +'<div class="readout"><div class="stat g"><span>precision</span><b id="tp">—</b></div>'
+    +'<div class="stat"><span>recall</span><b id="tr">—</b></div>'
+    +'<div class="stat r"><span>FP / שעה</span><b id="tfph">—</b></div></div>'
+    +'<div class="verdict" id="tverd">—</div>';
+  const cv=$('canvas',body),w=560,h=150,ctx=setup(cv,w,h);let th=0.45;
+  function m(t){const precision=0.55+0.44*t;const recall=Math.max(0,0.99-0.62*t*t);
+    const fpFrame=Math.max(0.0002,0.02*Math.pow(1-t,2.2));return{precision,recall,fph:fpFrame*25*3600}}
+  function draw(){ctx.fillStyle=C.paper;ctx.fillRect(0,0,w,h);const ox=44,oy=14,gw=w-80,gh=h-40;
+    ctx.strokeStyle=C.ink2;ctx.beginPath();ctx.moveTo(ox,oy);ctx.lineTo(ox,oy+gh);ctx.lineTo(ox+gw,oy+gh);ctx.stroke();
+    function c(fn,col){ctx.strokeStyle=col;ctx.lineWidth=2;ctx.beginPath();
+      for(let i=0;i<=80;i++){const t=(10+i)/100,X=ox+i/80*gw,Y=oy+gh-fn(m(t))*gh;i?ctx.lineTo(X,Y):ctx.moveTo(X,Y)}ctx.stroke()}
+    c(o=>o.precision,C.green);c(o=>o.recall,C.blue);
+    const X=ox+(th*100-10)/80*gw;ctx.strokeStyle=C.orange;ctx.setLineDash([4,3]);ctx.beginPath();ctx.moveTo(X,oy);ctx.lineTo(X,oy+gh);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle=C.green;ctx.font='10px sans-serif';ctx.textAlign='left';ctx.fillText('precision',ox+4,oy+10);
+    ctx.fillStyle=C.blue;ctx.fillText('recall',ox+4,oy+22)}
+  const sl=$('#tth',body);
+  function up(){th=+sl.value/100;$('#tthv',body).textContent=th.toFixed(2);const o=m(th);
+    $('#tp',body).textContent=o.precision.toFixed(2);$('#tr',body).textContent=o.recall.toFixed(2);
+    $('#tfph',body).textContent=Math.round(o.fph);
+    const vd=$('#tverd',body);let s,cl;
+    if(o.fph>200){s='מפעיל טובע בהתרעות שווא ('+Math.round(o.fph)+'/שעה)';cl='r'}
+    else if(o.recall<0.7){s='יעד חומק — recall נמוך מדי';cl='r'}
+    else{s='איזון מבצעי סביר';cl='g'}
+    vd.className='verdict '+cl;vd.textContent=s;draw();done()}
+  sl.addEventListener('input',up);up();
+},
+/* --- Curve Clinic --- */
+curve(body,done){
+  const cases=[
+    {d:[4.8,3.6,2.9,2.3,1.9,1.6,1.35,1.15,0.98,0.84,0.71,0.6,0.5,0.42,0.35,0.29,0.24,0.2,0.17,0.14],
+     v:[4.9,3.7,3.0,2.5,2.15,1.95,1.8,1.72,1.68,1.7,1.75,1.83,1.93,2.05,2.19,2.35,2.53,2.72,2.93,3.15],a:'overfit'},
+    {d:[4.9,3.8,3.1,2.6,2.2,1.9,1.65,1.45,1.28,1.14,1.02,0.92,0.84,0.77,0.71,0.66,0.62,0.58,0.55,0.52],
+     v:[5.0,3.9,3.2,2.7,2.35,2.05,1.82,1.63,1.5,1.4,1.32,1.26,1.21,1.17,1.14,1.12,1.1,1.09,1.08,1.07],a:'healthy'},
+    {d:[4.8,4.2,3.9,4.5,3.2,5.1,2.9,4.8,3.6,2.7,4.9,3.1,5.5,2.8,4.2,3.3,5.8,2.6,4.6,3.0],
+     v:[4.9,4.4,4.1,4.7,3.6,5.3,3.4,5.0,4.0,3.2,5.1,3.6,5.7,3.3,4.6,3.8,6.0,3.1,4.9,3.5],a:'lr'}
+  ];
+  let idx=0,answered=false;
+  body.innerHTML='<canvas></canvas>'
+    +'<div class="seg" id="cseg"><button data-a="healthy">אימון תקין</button><button data-a="overfit">Overfitting</button><button data-a="lr">LR גבוה מדי</button></div>'
+    +'<div class="verdict" id="cverd">אבחן את הגרף</div>'
+    +'<button class="seg" style="margin-top:8px"><button id="cnext" style="width:100%">גרף הבא ↺</button></button>';
+  const cv=$('canvas',body),w=560,h=200,ctx=setup(cv,w,h);
+  function draw(){ctx.fillStyle=C.paper;ctx.fillRect(0,0,w,h);const c=cases[idx];
+    const mark=c.a==='overfit'?8:0;plotCurves(ctx,w,h,[{d:c.d,c:C.green,l:'train'},{d:c.v,c:C.red,l:'val'}],5,mark)}
+  $('#cseg',body).addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+    const ok=b.dataset.a===cases[idx].a;const vd=$('#cverd',body);vd.className='verdict '+(ok?'g':'r');
+    vd.textContent=ok?'נכון! '+({healthy:'train ו-val יורדים יחד',overfit:'val מתהפך למעלה = שינון',lr:'loss קופץ בלי warmup'}[cases[idx].a]):'לא מדויק — הסתכל שוב על יחס train↔val';
+    answered=true;done()});
+  $('#cnext',body).addEventListener('click',()=>{idx=(idx+1)%cases.length;$('#cverd',body).className='verdict';$('#cverd',body).textContent='אבחן את הגרף';draw()});
+  draw();
+},
+/* --- ID Switch Sim --- */
+idsw(body,done){
+  body.innerHTML='<canvas></canvas>'
+    +'<div class="row"><label>רעש detection</label><input type="range" id="inz" min="0" max="100" value="20"><span class="val" id="inzv">20%</span></div>'
+    +'<div class="readout"><div class="stat"><span>ID switches</span><b id="isw">0</b></div>'
+    +'<div class="stat"><span>סטטוס</span><b id="ist" style="font-size:14px">—</b></div></div>'
+    +'<button class="seg" style="margin-top:8px"><button id="iplay" style="width:100%">▶ הרץ חצייה</button></button>'
+    +'<div class="hint">שני רחפנים חוצים מסלול. ברעש גבוה ה-tracker מבלבל זהויות בנקודת החיתוך.</div>';
+  const cv=$('canvas',body),w=560,h=200,ctx=setup(cv,w,h);let noise=0.2,t=0,raf=0,swaps=0,swapped=false;
+  const A={x0:40,y0:50,x1:520,y1:150},B={x0:40,y0:150,x1:520,y1:50};
+  function pos(P,u){return{x:P.x0+(P.x1-P.x0)*u,y:P.y0+(P.y1-P.y0)*u}}
+  function frame(){ctx.fillStyle='#0d1030';ctx.fillRect(0,0,w,h);
+    ctx.strokeStyle='rgba(120,140,220,.3)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(A.x0,A.y0);ctx.lineTo(A.x1,A.y1);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(B.x0,B.y0);ctx.lineTo(B.x1,B.y1);ctx.stroke();
+    const u=t/100;const a=pos(A,u),b=pos(B,u);
+    // near crossing at u~0.5, high noise -> swap ids
+    if(u>0.5&&!swapped){if(Math.random()<noise){swaps++;swapped=true}}
+    const idA=swapped?2:1,idB=swapped?1:2;
+    function dot(p,id,col){ctx.fillStyle=col;ctx.beginPath();ctx.arc(p.x,p.y,8,0,7);ctx.fill();
+      ctx.fillStyle='#fff';ctx.font='bold 11px monospace';ctx.textAlign='center';ctx.fillText('ID'+id,p.x,p.y-12)}
+    dot(a,idA,'#3b6cd0');dot(b,idB,'#e08a3b');
+    if(Math.abs(u-0.5)<0.06){ctx.strokeStyle='#ff5b5b';ctx.setLineDash([3,3]);ctx.strokeRect(a.x-24,60,48,80);ctx.setLineDash([])}
+    $('#isw',body).textContent=swaps;
+    const st=$('#ist',body);st.textContent=swaps?'ID התחלף!':'עוקב';st.style.color=swaps?C.red:C.green;
+    if(t<100){t+=1.2;raf=requestAnimationFrame(frame)}
+  }
+  $('#inz',body).addEventListener('input',e=>{noise=+e.target.value/100;$('#inzv',body).textContent=e.target.value+'%';done()});
+  $('#iplay',body).addEventListener('click',()=>{cancelAnimationFrame(raf);t=0;swapped=false;swaps=0;frame();done()});
+  frame();cancelAnimationFrame(raf);
+},
+/* --- Latency Budget --- */
+latency(body,done){
+  const stages=[['capture',33,80],['preprocess',6,20],['inference',9,40],['tracking',5,20],['alert',2,10]];
+  let vals=stages.map(s=>s[1]);
+  body.innerHTML='<canvas></canvas>'+stages.map((s,i)=>
+    '<div class="row"><label>'+s[0]+'</label><input type="range" data-i="'+i+'" min="0" max="'+s[2]+'" value="'+s[1]+'"><span class="val" id="lv'+i+'">'+s[1]+'ms</span></div>').join('')
+    +'<div class="row"><label>דרישת FPS</label><input type="range" id="lfps" min="10" max="60" value="30"><span class="val" id="lfpsv">30</span></div>'
+    +'<div class="readout"><div class="stat"><span>סה"כ</span><b id="ltot">—</b></div><div class="stat"><span>FPS מושג</span><b id="lach">—</b></div></div>'
+    +'<div class="verdict" id="lverd2">—</div>';
+  const cv=$('canvas',body),w=560,h=120,ctx=setup(cv,w,h);let req=30;
+  function draw(){ctx.fillStyle=C.paper;ctx.fillRect(0,0,w,h);const tot=vals.reduce((a,b)=>a+b,0);
+    const budget=1000/req;const bx=20,bw=w-40,y=44,scale=bw/Math.max(tot,budget);
+    let x=bx;const cols=['#9fb8d0','#b8c9a8','#7fb07f','#d0b87f','#c99'];
+    vals.forEach((v,i)=>{const sw=v*scale;ctx.fillStyle=cols[i];ctx.fillRect(x,y,Math.max(0,sw-1),30);x+=sw});
+    // budget line
+    const bxp=bx+budget*scale;ctx.strokeStyle=tot>budget?C.red:C.green;ctx.lineWidth=2;ctx.setLineDash([5,4]);
+    ctx.beginPath();ctx.moveTo(bxp,20);ctx.lineTo(bxp,88);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle=tot>budget?C.red:C.green;ctx.font='11px sans-serif';ctx.textAlign='center';
+    ctx.fillText('תקציב '+budget.toFixed(0)+'ms',bxp,16);
+    ctx.fillStyle=C.ink2;ctx.textAlign='left';ctx.fillText('סה"כ שרשרת '+tot.toFixed(0)+'ms',bx,104)}
+  function up(){const tot=vals.reduce((a,b)=>a+b,0),ach=1000/tot,budget=1000/req;
+    $('#ltot',body).textContent=tot.toFixed(0)+'ms';$('#lach',body).textContent=ach.toFixed(0);
+    const vd=$('#lverd2',body),ok=tot<=budget;vd.className='verdict '+(ok?'g':'r');
+    vd.textContent=ok?'בתקציב — עומד בדרישת ה-FPS':'חריגה — '+ach.toFixed(0)+'FPS מול דרישת '+req;draw()}
+  $$('input[data-i]',body).forEach(sl=>sl.addEventListener('input',()=>{const i=+sl.dataset.i;vals[i]=+sl.value;$('#lv'+i,body).textContent=sl.value+'ms';up();done()}));
+  $('#lfps',body).addEventListener('input',e=>{req=+e.target.value;$('#lfpsv',body).textContent=req;up();done()});
+  up();
+},
+/* --- Gantt Reality Check --- */
+gantt(body,done){
+  const acts=[['איסוף דאטה',15],['תיוג',15],['אימון',40],['הערכה',15],['אינטגרציה',15]];
+  const real=[35,30,15,10,10];let vals=acts.map(a=>a[1]);
+  body.innerHTML='<canvas></canvas>'+acts.map((a,i)=>
+    '<div class="row"><label>'+a[0]+'</label><input type="range" data-i="'+i+'" min="0" max="70" value="'+a[1]+'"><span class="val" id="gv'+i+'">'+a[1]+'%</span></div>').join('')
+    +'<div class="verdict" id="gverd">חלק 100% מהזמן בין הפעילויות</div>'
+    +'<div class="hint">השווה לפרויקט אמיתי: ~80% מהעבודה היא דאטה (איסוף+תיוג).</div>';
+  const cv=$('canvas',body),w=560,h=160,ctx=setup(cv,w,h);
+  const cols=['#5b8a3a','#7fae7f','#d0863b','#c9a13b','#8a7fae'];
+  function bar(y,arr,total,label){const bx=20,bw=w-40;let x=bx;
+    arr.forEach((v,i)=>{const sw=v/total*bw;ctx.fillStyle=cols[i];ctx.fillRect(x,y,Math.max(0,sw-1),26);x+=sw});
+    ctx.fillStyle=C.ink2;ctx.font='11px sans-serif';ctx.textAlign='right';ctx.fillText(label,w-20,y-4)}
+  function draw(){ctx.fillStyle=C.paper;ctx.fillRect(0,0,w,h);const tot=vals.reduce((a,b)=>a+b,0)||1;
+    ctx.textAlign='left';ctx.fillStyle=C.ink2;ctx.font='11px sans-serif';ctx.fillText('שלך',20,30);
+    bar(34,vals,tot,'');ctx.fillText('פרויקט אמיתי',20,96);bar(100,real,100,'');
+    // legend
+    ctx.font='10px sans-serif';let lx=20;acts.forEach((a,i)=>{ctx.fillStyle=cols[i];ctx.fillRect(lx,140,10,10);
+      ctx.fillStyle=C.ink2;ctx.fillText(a[0],lx+13,149);lx+=Math.min(108,a[0].length*11+30)})}
+  function up(){const dataPct=(vals[0]+vals[1])/(vals.reduce((a,b)=>a+b,0)||1)*100;
+    const vd=$('#gverd',body);const ok=dataPct>=60;vd.className='verdict '+(ok?'g':'r');
+    vd.textContent=ok?'ריאלי — הדאטה מקבל את מרב הזמן ('+dataPct.toFixed(0)+'%)':'הפוך מהמציאות — רק '+dataPct.toFixed(0)+'% לדאטה, האימון תופס יותר מדי';draw()}
+  $$('input[data-i]',body).forEach(sl=>sl.addEventListener('input',()=>{const i=+sl.dataset.i;vals[i]=+sl.value;$('#gv'+i,body).textContent=sl.value+'%';up();done()}));
+  draw();up();
+}
+};
+const LAB_TITLE={iou:'IoU Grip',kernel:'Kernel Playground',leak:'Leakage Splitter',pixel:'Pixel Budget',
+  thresh:'Threshold Playground',curve:'Curve Clinic',idsw:'ID Switch Sim',latency:'Latency Budget',gantt:'Gantt Reality Check'};
+
+/* ============================ PATH RENDER ============================ */
+const pathEl=$('#path');
+function nodeState(id,idx){
+  const isBoss=id[0]==='b';
+  const done = isBoss ? !!(S.bosses[id]&&S.bosses[id].done) : !!(S.chapters[id]&&S.chapters[id].done);
+  let unlocked = idx===0;
+  if(idx>0){const prev=SEQUENCE[idx-1];const pb=prev[0]==='b';
+    unlocked = pb ? !!(S.bosses[prev]&&S.bosses[prev].done) : !!(S.chapters[prev]&&S.chapters[prev].done)}
+  return{done,unlocked,isBoss}
+}
+function renderPath(){
+  pathEl.querySelectorAll('.node').forEach(n=>n.remove());
+  let currentSet=false;
+  SEQUENCE.forEach((id,idx)=>{
+    const st=nodeState(id,idx);
+    const data=st.isBoss?BOSSES.find(b=>b.id===id):CHAPTERS.find(c=>c.id===id);
+    const node=document.createElement('div');node.className='node'+(st.isBoss?' boss':'')+(data.final?' final':'');
+    let cls=st.done?'done':(st.unlocked&&!currentSet?'current':(st.unlocked?'':'locked'));
+    if(cls==='current')currentSet=true;
+    node.classList.add(cls);
+    if(idx>0){const stem=document.createElement('div');stem.className='stem';node.appendChild(stem)}
+    const num=st.isBoss?'★':CHAPTERS.findIndex(c=>c.id===id)+1;
+    const icon=st.isBoss?IC.boss:IC[data.icon];
+    node.innerHTML+=(st.isBoss?'<div class="tag">'+data.tag+'</div>':'')
+      +'<button class="orb"><span class="ic">'+icon+'</span>'+(st.isBoss?'':'<span class="num">'+num+'</span>')
+      +(cls==='locked'?'<span class="lockic"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#8478BE" stroke-width="3"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>':'')
+      +'</button>'
+      +'<div class="label">'+data.title+'<small>'+(st.isBoss?data.intro.slice(0,42)+'…':data.short)+'</small></div>';
+    node.querySelector('.orb').addEventListener('click',()=>{
+      if(cls==='locked'){toast('סיים את השלב הקודם כדי לפתוח');return}
+      st.isBoss?openBoss(id):openChapter(id);
+    });
+    pathEl.appendChild(node);
+  });
+  // header
+  $('#xpChip').textContent='★ '+S.xp;
+  $('#streakChip').textContent='🔥 '+(S.streakDays||0);
+  const total=CHAPTERS.length*100;$('#xpFill').style.width=Math.min(100,S.xp/total*100)+'%';
+}
+
+/* ============================ READER ============================ */
+const reader=$('#reader'),rbody=$('#readerBody');
+let curCh=null,quizDone=false,labDone=false;
+function openChapter(id){
+  const ch=CHAPTERS.find(c=>c.id===id);curCh=ch;quizDone=false;labDone=false;
+  $('#readerTitle').firstChild.textContent=ch.title;
+  $('#readerSub').textContent='פרק '+(CHAPTERS.indexOf(ch)+1)+' · מעבדה: '+LAB_TITLE[ch.lab];
+  $('#stepDots').innerHTML='';$('#prevBtn').style.display='none';
+  let html='';
+  ch.sections.forEach(s=>{html+=renderBlock(s)});
+  // quiz
+  html+='<div class="quiz" id="quizBox"><div class="qhead">חידון · '+ch.quiz.length+' שאלות</div><div id="quizInner"></div></div>';
+  // lab
+  html+='<div class="labwrap"><div class="lab"><div class="labhead"><span>מעבדה · '+LAB_TITLE[ch.lab]+'</span><span class="st" id="labSt">ממתין לאינטראקציה</span></div><div class="labbody" id="labBody"></div></div></div>';
+  // manager questions
+  html+='<div class="mgr"><h4>◆ מה שואלים את הצוות</h4><div class="sub">קח את השאלות האלה לפגישה הבאה</div>';
+  ch.mgr.forEach((q,i)=>{html+='<div class="qq"><span class="n">'+(i+1)+'</span><span>'+q+'</span></div>'});
+  html+='<button class="copy" id="copyBtn">⧉ העתק שאלות</button></div>';
+  rbody.innerHTML=html;
+  $('#readerScroll').scrollTop=0;
+  buildFigs(rbody);
+  buildQuiz(ch);
+  LABS[ch.lab]($('#labBody'),()=>{if(!labDone){labDone=true;$('#labSt').textContent='הושלם ✓';$('#labSt').className='st ok';gate()}});
+  $('#copyBtn').addEventListener('click',()=>{
+    const txt=ch.title+'\n'+ch.mgr.map((q,i)=>(i+1)+'. '+q).join('\n');
+    navigator.clipboard&&navigator.clipboard.writeText(txt);
+    $('#copyBtn').textContent='הועתק ✓';$('#copyBtn').classList.add('done');
+  });
+  const nb=$('#nextBtn');nb.textContent='סיים פרק ✓';nb.disabled=true;
+  nb.onclick=()=>completeChapter(ch);
+  reader.classList.add('on');document.body.style.overflow='hidden';
+  gate();
+}
+function renderBlock(s){
+  switch(s.t){
+    case'h':return'<div class="sec"><h3>'+s.html+'</h3></div>';
+    case'p':return'<div class="sec"><p>'+s.html+'</p></div>';
+    case'ul':return'<div class="sec"><ul>'+s.items.map(i=>'<li>'+i+'</li>').join('')+'</ul></div>';
+    case'term':return'<div class="term"><b>'+s.b+'</b><span>'+s.s+'</span></div>';
+    case'callout':return'<div class="callout"><div class="lead">'+s.lead+'</div><div>'+s.html+'</div></div>';
+    case'trap':return'<div class="trap"><div class="th">▲ מלכודת · '+s.code+'</div><div class="tb">'+s.body+'<div class="ask">'+s.ask+'</div></div></div>';
+    case'fig':return'<div class="fig"><canvas data-fig="'+s.draw+'"></canvas><div class="cap">'+s.cap+'</div></div>';
+    default:return'';
+  }
+}
+function buildFigs(root){$$('canvas[data-fig]',root).forEach(cv=>{const fn=FIGS[cv.dataset.fig];if(fn)fn(cv)})}
+function buildQuiz(ch){
+  const inner=$('#quizInner');let answered=0;
+  inner.innerHTML=ch.quiz.map((q,qi)=>
+    '<div class="q" data-q="'+qi+'">'+q.q+'</div><div data-opts="'+qi+'">'
+    +q.opts.map((o,oi)=>'<button class="opt" data-qi="'+qi+'" data-oi="'+oi+'">'+o+'</button>').join('')
+    +'</div><div class="expl" data-expl="'+qi+'">'+q.ex+'</div>').join('');
+  const state=ch.quiz.map(()=>false);
+  inner.addEventListener('click',e=>{
+    const b=e.target.closest('.opt');if(!b)return;const qi=+b.dataset.qi,oi=+b.dataset.oi;
+    if(state[qi])return;state[qi]=true;
+    const q=ch.quiz[qi];const opts=$$('.opt[data-qi="'+qi+'"]',inner);
+    opts.forEach((o,i)=>{o.classList.add('dim');if(i===q.a)o.classList.add('correct');});
+    if(oi!==q.a){b.classList.remove('dim');b.classList.add('wrong');
+      // weak term feed
+      if(!S.weakTerms.includes(ch.title))S.weakTerms.push(ch.title);}
+    else{if(!ch._qa)ch._qa={};if(!ch._qa[qi]){S.xp+=10;ch._qa[qi]=1}}
+    $('[data-expl="'+qi+'"]',inner).classList.add('on');
+    answered++;if(answered>=ch.quiz.length){quizDone=true;gate()}
+    save();$('#xpChip').textContent='★ '+S.xp;
+  });
+}
+function gate(){const nb=$('#nextBtn');nb.disabled=!(quizDone&&labDone);
+  nb.textContent=nb.disabled?(labDone?'ענה על החידון':'ענה על החידון והפעל את המעבדה'):'סיים פרק ✓'}
+function completeChapter(ch){
+  const first=!(S.chapters[ch.id]&&S.chapters[ch.id].done);
+  S.chapters[ch.id]={done:true,labDone:true};
+  if(first){S.xp+=45;xpPop(45)}
+  save();closeReader();renderPath();toast(first?'פרק הושלם! +45★':'הושלם');
+}
+function closeReader(){reader.classList.remove('on');document.body.style.overflow=''}
+$('#readerClose').addEventListener('click',closeReader);
+
+/* ============================ BOSS ENGINE ============================ */
+const sheet=$('#bossSheet'),chatEl=$('#bossChat'),choicesEl=$('#bossChoices');
+let curBoss=null,bossScore=0;
+function openBoss(id){
+  const b=BOSSES.find(x=>x.id===id);curBoss=b;bossScore=0;
+  $('#bossHead').innerHTML='<div class="tag">'+b.tag+'</div><h3>'+b.title+'</h3><p>'+b.intro+'</p>';
+  chatEl.innerHTML='';choicesEl.innerHTML='';
+  sheet.classList.add('on');document.body.style.overflow='hidden';
+  goNode(b.tree.start);
+}
+function bubble(who,text,me){const d=document.createElement('div');d.className='msg '+(me?'me':'them');
+  d.innerHTML=(who?'<div class="who">'+who+'</div>':'')+text;chatEl.appendChild(d);chatEl.scrollTop=chatEl.scrollHeight}
+function goNode(nid){
+  const node=curBoss.tree.nodes[nid];
+  if(node.end){return bossEnd(node)}
+  bubble(node.who,node.text,false);
+  choicesEl.innerHTML='';
+  node.choices.forEach(ch=>{const btn=document.createElement('button');btn.textContent=ch.t;
+    btn.onclick=()=>{bubble('',ch.t,true);bossScore+=ch.good;choicesEl.innerHTML='';
+      if(ch.fb)setTimeout(()=>bubble('· משוב ·','<i>'+ch.fb+'</i>',false),180);
+      setTimeout(()=>goNode(ch.to),ch.fb?520:200)};
+    choicesEl.appendChild(btn)});
+}
+function bossEnd(node){
+  const win=node.end==='win';const score=node.score||0;
+  choicesEl.innerHTML='';
+  const html='<div class="bossresult"><div class="scoreRing">'+ringSVG(score)+'</div>'
+    +'<h3 style="color:'+(win?'#4BE0B4':'#FF6B6B')+'">'+node.title+'</h3><p>'+node.text+'</p>'
+    +(curBoss.final&&win?certHTML():'')
+    +'<div style="display:flex;gap:10px;margin-top:8px"><button class="btn ghost" id="bossRetry" style="flex:1">שוב</button>'
+    +'<button class="btn primary" id="bossDone" style="flex:1">'+(win?'המשך במסלול':'סגור')+'</button></div></div>';
+  chatEl.insertAdjacentHTML('beforeend',html);chatEl.scrollTop=chatEl.scrollHeight;
+  $('#bossRetry').onclick=()=>openBoss(curBoss.id);
+  $('#bossDone').onclick=()=>{
+    const prev=S.bosses[curBoss.id]||{attempts:0,score:0};
+    S.bosses[curBoss.id]={done:win||prev.done,score:Math.max(prev.score,score),attempts:prev.attempts+1};
+    if(win){const add=Math.round(score/2);S.xp+=add}
+    save();closeBoss();renderPath();if(win)toast('בוס הושלם! +'+Math.round(score/2)+'★');
+  };
+}
+function ringSVG(score){const r=52,c=2*Math.PI*r,off=c*(1-score/100);const col=score>=80?'#4BE0B4':score>=50?'#FFD66B':'#FF6B6B';
+  return'<svg viewBox="0 0 120 120" width="120" height="120"><circle cx="60" cy="60" r="'+r+'" fill="none" stroke="#352A6E" stroke-width="10"/>'
+    +'<circle cx="60" cy="60" r="'+r+'" fill="none" stroke="'+col+'" stroke-width="10" stroke-linecap="round" stroke-dasharray="'+c+'" stroke-dashoffset="'+off+'" transform="rotate(-90 60 60)"/>'
+    +'<text x="60" y="68" text-anchor="middle" font-size="26" font-weight="800" fill="'+col+'">'+score+'</text></svg>'}
+function certHTML(){return'<div class="cert"><div class="seal">'
+  +'<svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="34" fill="none" stroke="#FFD66B" stroke-width="3"/>'
+  +'<path d="M26 40l10 10 18-20" fill="none" stroke="#4BE0B4" stroke-width="4" stroke-linecap="round"/></svg></div>'
+  +'<h2>תעודת סיום</h2><div class="name">מהנדס־מנהל · זיהוי רחפנים בווידאו</div><div class="line"></div>'
+  +'<p style="font-size:13px">השלמת את כל 9 הפרקים, 9 המעבדות ו-3 מבחני ההחלטה — וחשפת את 18 המלכודות. אתה יודע מה לשאול.</p></div>'}
+function closeBoss(){sheet.classList.remove('on');document.body.style.overflow=''}
+sheet.addEventListener('click',e=>{if(e.target===sheet)closeBoss()});
+
+/* ============================ FX ============================ */
+let toastT;function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),2200)}
+function xpPop(n){const el=document.createElement('div');el.className='xppop';el.textContent='+'+n+'★';
+  el.style.left=(window.innerWidth/2-20)+'px';el.style.top=(window.innerHeight/2)+'px';document.body.appendChild(el);
+  setTimeout(()=>el.remove(),1000)}
+
+/* ============================ INIT ============================ */
+renderPath();
+/* expose for QA/debug (harmless in standalone app) */
+try{Object.assign(window,{CHAPTERS,BOSSES,LABS,FIGS,IC,SEQUENCE});}catch(_){}
+</script>
+</body>
+</html>
