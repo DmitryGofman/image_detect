@@ -88,7 +88,7 @@ header{
 .node.locked .orb .ic{opacity:.35;filter:grayscale(1)}
 .node .lockic{position:absolute;bottom:-4px;inset-inline-end:-4px;width:22px;height:22px;border-radius:50%;
   background:var(--bg2);border:2px solid var(--lock);display:grid;place-items:center}
-.node .label{position:absolute;top:50%;transform:translateY(-50%);width:150px;font-size:13px;font-weight:700;line-height:1.25}
+.node .label{position:absolute;top:50%;transform:translateY(-50%);width:clamp(88px,calc(50vw - 62px),150px);font-size:13px;font-weight:700;line-height:1.25}
 .node:nth-child(odd) .label{inset-inline-start:calc(50% + 52px)}
 .node:nth-child(even) .label{inset-inline-end:calc(50% + 52px);text-align:end}
 .node .label small{display:block;font-weight:600;color:var(--ink3);font-size:11px;margin-top:2px}
