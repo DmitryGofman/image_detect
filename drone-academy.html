@@ -268,6 +268,7 @@ header{
       <span>אקדמיית זיהוי רחפנים</span>
     </div>
     <div class="hstats">
+      <button class="chip" id="glossBtn" title="מילון מונחים">📖</button>
       <span class="chip xp" id="xpChip">★ 0</span>
       <span class="chip streak" id="streakChip">🔥 0</span>
     </div>
@@ -366,9 +367,10 @@ const CHAPTERS=[
 {id:'ch1',icon:'target',title:'היעד: רחפן בפריים',short:'detection מול classification · למה רחפן קשה',lab:'iou',
  sections:[
   H('מה בכלל הבעיה'),
-  P('<b>Classification</b> עונה "מה יש בתמונה" — תווית אחת לכל הפריים. <b>Detection</b> עונה "מה, כמה, ואיפה" — כל עצם מקבל <b>תיבה</b> (Bounding Box) ומחלקה. ההבדל נשמע קטן; הוא משנה את כל שרשרת הדאטה, המדדים והכשלים.'),
+  P('<b>Classification</b> עונה "מה יש בתמונה" — תווית אחת לכל הפריים. <b>Detection</b> עונה "מה, כמה, ואיפה" — כל עצם מקבל <b>תיבה</b> (Bounding Box) ומחלקה. (<b>Segmentation</b> הולך צעד נוסף — מסכה פיקסל-לפיקסל — ולרוב מיותר ליעד אווירי.) ההבדל נשמע קטן; הוא משנה את כל שרשרת הדאטה, המדדים והכשלים.'),
+  P('שלוש שאלות הנדסיות מגדירות את המערכת לפני שנוגעים במודל: <b>(1)</b> באיזה טווח ובאיזה גודל עצם חייבים לזהות? <b>(2)</b> מה ה-latency המותר מהחיישן עד החלטה? <b>(3)</b> מה יקר יותר — פספוס יעד (FN) או התרעת שווא (FP)? התשובה השלישית קובעת את נקודת העבודה של כל המערכת.'),
   D('BOUNDING BOX','ארבעה מספרים שתוחמים עצם. כל טענה של "המודל טועה" מתחילה בשאלה: התיבה במקום? בגודל? או שאין תיבה בכלל?'),
-  D('ONE-STAGE / TWO-STAGE','משפחה מהירה (YOLO) מול מדויקת-היסטורית (Faster R-CNN). ההחלטה נגזרת מתקציב ה-latency על חומרת היעד — לא מהעדפת הצוות. כל דגמי YOLO מ-v8 והלאה הם anchor-free.'),
+  D('ONE-STAGE / TWO-STAGE','משפחה מהירה (YOLO/SSD: 45–155FPS) מול מדויקת-היסטורית (Faster R-CNN: ~5FPS — שלב הצעות + שלב סיווג). כלל אצבע מהספרות: ≥20FPS נחשב "זמן אמת". ההחלטה נגזרת מתקציב ה-latency על חומרת היעד — לא מהעדפת הצוות. כל דגמי YOLO מ-v8 והלאה הם anchor-free.'),
   H('למה רחפן הוא יעד קשה'),
   P('רחפן הוא <b>קטן, מהיר, ודומה לציפור</b>. הקושי אינו "המודל לא מספיק חכם" אלא פיזיקה: DJI Mavic ברוחב 0.35מ׳ במצלמת 1080p עם שדה־ראייה 60° הוא <span class="num-hi">1.3 פיקסל</span> ב-500מ׳, ו-<span class="num-hi">0.3 פיקסל</span> ב-2ק"מ — פחות מפיקסל. גם רשת מושלמת לא מזהה מה שאין לו פיקסלים.'),
   P('רק עדשת זום צרה (5°) מביאה את היעד ל-<span class="num-hi">15 פיקסל</span> ב-500מ׳. הסף המעשי לזיהוי אמין בספרות הוא בערך <b>10–15 פיקסל</b>. ובמדד COCO, על אותו מודל בדיוק, AP על עצמים קטנים הוא 17.6 מול 62.4 על גדולים — <b>פי 3.5 פער</b>. רחפן חי בקצה הקשה של הגרף.'),
@@ -425,7 +427,8 @@ const CHAPTERS=[
  sections:[
   H('דאטה הוא המוצר'),
   P('80% מהפרויקט הוא איסוף, תיוג וניקוי. דאטהסטים ציבוריים לרחפנים קיימים — <b>Anti-UAV</b> (410 רצפי וידאו RGB+IR), <b>DUT Anti-UAV</b> (10,000 תמונות) — אבל ברובם הרחפן הוא <5% משטח הפריים. זה עולם של עצמים קטנים.'),
-  D('ANNOTATION GUIDELINES','מסמך שמגדיר איך מתייגים עצם חתוך, מוסתר, מטושטש: מה הגודל המינימלי לתיוג (~10px), דלי occlusion (מלא / חלקי >30% / כבד <30%), ותיבות צמודות. בלעדיו — רעש תיוג שאף ארכיטקטורה לא תתקן.'),
+  D('ANNOTATION GUIDELINES','מסמך שמגדיר איך מתייגים עצם חתוך, מוסתר, מטושטש: מה הגודל המינימלי לתיוג (~10px), דלי occlusion (מלא / חלקי >30% / כבד <30%), ותיבות צמודות. בלעדיו — רעש תיוג שאף ארכיטקטורה לא תתקן. (התיוג נשמר בפורמט סטנדרטי — COCO/YOLO — אלה רק קבצי קואורדינטות; הקונספט חשוב, הפורמט לא.)'),
+  D('CLASS IMBALANCE','המחלקות הנדירות הן בדיוק המסוכנות מבצעית: "רחפן בטווח קרוב" הוא אירוע נדיר בדאטה — והמודל לומד הכי פחות בדיוק על מה שהכי קריטי. שאלו: כמה דוגמאות יש לכל מחלקה ולכל תרחיש קצה (לילה, ערפל, טווח רחוק)? בתוך הרשת עצמה חוסר-האיזון קיצוני עוד יותר — על כל מיקום עם עצם יש מאות מיקומי רקע — ולכן קיימים מנגנונים ייעודיים: יחס קבוע 1:3 חיובי:שלילי בדו-שלביים, Focal Loss בחד-שלביים.'),
   H('כשתיוג לא-מדויק הורג עצמים קטנים'),
   P('טעות של <b>2 פיקסל</b> בתיבה בגודל 10px מורידה IoU ל-<span class="num-hi">0.47</span> — כבר מתחת לסף 0.5. אותה טעות על תיבה 100px נותנת IoU 0.92. רעש תיוג של ~30% הופך את ה-mAP לחצי. על רחפן, כל פיקסל בתיוג נחשב.'),
   FIG('drawJitter','אותה טעות של 2px: הרסנית על 10px, זניחה על 100px'),
@@ -460,6 +463,7 @@ const CHAPTERS=[
   P('כל גלאי מודרני בנוי מ-3 חלקים:'),
   UL('<b>Backbone</b> — מחלץ features בסקאלות יורדות (זו הקונבולוציה מפרק 2, מוערמת)','<b>Neck (FPN+PAN)</b> — ממזג סקאלות: FPN מלמעלה-למטה מזריק סמנטיקה, PAN מלמטה-למעלה מחזיר לוקליזציה','<b>Head</b> — מנבא מחלקה + תיבה בכל סקאלה (anchor-free ברוב הדגמים החדשים)'),
   P('לעצמים קטנים מוסיפים <b>P2 head</b> (stride-4) — כי השכבה הרגילה (stride-8) מכווצת רחפן 8px לתגובה של פיקסל בודד.'),
+  D('NMS','Non-Maximum Suppression — הרשת יורה עשרות תיבות חופפות על אותו עצם; NMS משאיר את הבטוחה ביותר ומוחק את השאר. שלב postprocess שעולה זמן (ויכול להתנפח כשהסצנה עמוסה); דגמים חדשים (YOLO26, RT-DETR) מוותרים עליו לגמרי — end-to-end.'),
   FIG('drawAnatomy','Backbone → Neck (FPN+PAN) → Head — הצינור שכל טענת דיוק עוברת דרכו'),
   T('TRAP-15','Tiling מעלה דיוק אבל עולה פי 4–9 בזמן. "פשוט נחתוך את הפריים" הוא החלטת latency, לא free lunch.','אם נעבור ל-tiling — מה זה עושה לתקציב ה-latency על חומרת היעד?'),
   T('TRAP-12','העלאת רזולוציית הכניסה מ-640 ל-1280 מרובעת את החישוב (FLOPs ∝ רזולוציה²). "נגדיל את הרשת" נשמע חינמי — הוא לא.','מה מחיר ה-latency של הגדלת רזולוציית הכניסה שאתם מציעים?')
@@ -487,10 +491,12 @@ const CHAPTERS=[
   D('PRECISION / RECALL','Precision = כמה מההתרעות אמיתיות. Recall = כמה מהעצמים נתפסו. סליידר threshold אחד מזיז את שניהם בכיוונים הפוכים — כל ויכוח על "המודל מפספס" מסתכם כאן.'),
   P('<b>עקומת PR</b> נבנית ממיון החיזויים לפי ביטחון, וספירה מצטברת של TP/FP. <b>AP</b> = השטח מתחת לעקומה (COCO: ממוצע על 101 נקודות recall). בגילוי <b>אין True Negative</b> — אינסוף מיקומים ריקים — לכן המדדים בנויים רק מ-TP/FP/FN.'),
   T('TRAP-02','mAP@0.5 ו-mAP@0.5:0.95 הם מדדים שונים שיכולים להיבדל פי 1.35–1.45. "mAP 0.91" בלי סף IoU מוצהר — כמעט תמיד זה ה-0.5 המקל. דגל אדום.','באיזה IoU threshold נמדד ה-mAP, ולמה זה הסף הרלוונטי אלינו?'),
+  P('ועוד עדינות שמנהלים נופלים בה: <b>"mAP" מחושב אחרת בכל benchmark</b> (VOC הישן: 11 נקודות; VOC2010+: שטח מדויק; COCO: 101 נקודות, ו-COCO בכלל לא מבדיל בין AP ל-mAP). מספרים משני מאמרים/דאטהסטים שונים <b>אינם ברי-השוואה ישירה</b> גם כששניהם נקראים "mAP".'),
   H('המדד המבצעי האמיתי'),
   P('במערכת חיה, המדד הוא <b>התרעות שווא לשעת וידאו רציף</b> — לא mAP על סטילס. החישוב פשוט: FP-לפריים × FPS × 3600. 0.002 FP/פריים ב-25fps = <span class="num-hi">180 התרעות שווא בשעה</span>. מפעיל שמקבל 180 התרעות שווא בשעה מפסיק להאמין למערכת.'),
   FIG('drawFPhour','אותו מודל, סף ביטחון שונה — precision, recall, ו-FP/שעה זזים יחד'),
-  T('TRAP-03','במערכת מבצעית המדד האמיתי הוא FP/שעה על סצנה ריקה מהיעד — לא mAP על תמונות. mAP גבוה יכול להסתיר מבול התרעות שווא.','מה ה-FP/שעה על שעה של וידאו רציף ריק מהיעד?')
+  T('TRAP-03','במערכת מבצעית המדד האמיתי הוא FP/שעה על סצנה ריקה מהיעד — לא mAP על תמונות. mAP גבוה יכול להסתיר מבול התרעות שווא.','מה ה-FP/שעה על שעה של וידאו רציף ריק מהיעד?'),
+  CO('מדרישה מבצעית ליעד נומרי','העבודה שלך כמהנדס מערכת היא לתרגם "לזהות רחפנים" למספרים חתומים: <b>Recall ≥ 0.9</b> עד טווח X בתנאי יום · <b>≤ 2 התרעות שווא לשעה</b> על סצנה ריקה · <b>Latency ≤ 200ms</b> מחיישן להתרעה על חומרת היעד. בלי שלושת המספרים האלה, "המודל עובד" היא טענה שאי אפשר להפריך.')
  ],
  quiz:[
   {q:'הצוות מדווח "mAP 0.91". מה חסר?',
@@ -512,6 +518,15 @@ const CHAPTERS=[
  sections:[
   H('לקרוא גרף אימון'),
   P('ברירות מחדל שפויות (Ultralytics): <b>lr0≈0.01</b>, warmup של 3 epochs, cosine decay, ו-batch הכי גדול שנכנס לזיכרון (משפר סטטיסטיקת BatchNorm). ה-loss מתפרק ל-3: <b>box</b> (CIoU), <b>cls</b> (BCE), <b>dfl</b> (מיקום כהתפלגות), במשקלים 7.5/0.5/1.5.'),
+  H('פרמטר → מה הוא עושה → מה שואלים'),
+  UL('<b>Learning Rate</b> — גודל צעד הלמידה. גבוה מדי = קפיצות/NaN; נמוך מדי = איטי. → "יש warmup? מי כיוון ולמה?"',
+     '<b>Batch Size</b> — כמה תמונות בצעד. גדול = יציב יותר. → "ה-batch מוגבל ע"י הזיכרון או ע"י החלטה?"',
+     '<b>Epochs</b> — כמה סיבובים על הדאטה. יותר ≠ טוב יותר (overfitting). → "איפה ה-early stopping ולמה שם?"',
+     '<b>רזולוציית קלט</b> — 640/1280. דיוק על קטנים ↑ אבל FLOPs ∝ רזולוציה². → "מה זה עושה ל-latency על היעד?"',
+     '<b>גודל מודל</b> — n/s/m/l/x. לדוגמה YOLO11: n = mAP 39.5 ב-1.5ms; x = 54.7 ב-11.3ms. → "למה דווקא הגודל הזה מול חומרת היעד?"',
+     '<b>Optimizer</b> — SGD/Adam: איך מעדכנים משקלים. אינטואיציה בלבד: Adam סלחני בהתחלה, SGD לרוב מדייק בסוף. לא נושא להחלטת מנהל.',
+     '<b>Pretraining</b> — ההחלטה בעלת המינוף הגבוה ביותר: במחקר אבלציה של Intel, ויתור על משקלי COCO עלה עד <b>17 נקודות AP</b> — יותר מכל טריק אחר. → "התחלנו ממשקלים מאומנים?"',
+     '<b>Early Stopping</b> — לא רק נגד overfitting: במדידה, קיצץ זמן אימון פי 4–8.6 בלי אובדן דיוק. → "כמה GPU-שעות נחסכות?"'),
   UL('<b>התכנסות בריאה</b>: train ו-val יורדים יחד ומשתטחים','<b>Overfitting</b>: train ממשיך לרדת אבל <b>val מתהפך למעלה</b> (בד"כ סביב epoch 9 על דאטה קטן)','<b>LR גבוה מדי</b>: קפיצות/NaN — לכן יש warmup','<b>Batch קטן מדי</b>: loss רועש, BatchNorm גרוע'),
   FIG('drawOverfit','train יורד, val מתהפך ב-epoch 9 — נקודת ה-early stopping'),
   T('TRAP-07','<b>loss יורד ≠ mAP עולה.</b> אפשר לראות val loss משתפר בזמן שה-mAP תקוע (או להפך). ה-loss הוא proxy; המדד שקובע הוא mAP/FP-שעה. אל תאשרו על סמך "ה-loss יורד יפה".','מראים לי loss — מה ה-mAP ו-FP/שעה עשו באותו זמן?'),
@@ -568,6 +583,7 @@ const CHAPTERS=[
  sections:[
   H('מהמחשב לחומרת היעד'),
   P('מודל שאומן ב-PyTorch לא רץ כמו שהוא על ה-edge. השרשרת: <b>PyTorch → ONNX → TensorRT engine</b>, שנקמפל לכל GPU ולכל דיוק בנפרד. TensorRT יכול להאיץ פי 2–5.'),
+  P('החלטת ארכיטקטורה מערכתית: <b>מודל כבד בשרת</b> (עיבוד אופליין/מרכזי, דיוק מקסימלי) מול <b>מודל קל על הפלטפורמה</b> (זמן אמת, תקציב ואטים). לרוב התשובה היא שניהם — קל על ה-edge להתרעה, כבד בשרת לאימות — אבל זו החלטה שמישהו צריך לקבל במודע, לא ברירת מחדל.'),
   D('Quantization','הורדת דיוק חישוב כדי להאיץ. <b>FP16</b>: כמעט אפס נפילת דיוק. <b>INT8</b>: מהיר יותר אבל נפילה של <span class="num-hi">3–7%</span> mAP — ובמקרה קלאסי מתועד, YOLOv5s צנח מ-mAP 0.36 ל-<b>0.05</b> בגלל כיול גרוע. ה-engine עדיין רץ ומוציא תיבות — הוא פשוט שבור.'),
   T('TRAP-16','INT8 דורש <b>כיול</b> (calibration) על תמונות מייצגות. כיול גרוע מפיל דיוק בשקט — ודווקא עצמים קטנים (רחפן) נופלים ראשונים, כי האות שלהם קרוב לרצפת הרעש של הקוונטיזציה.','על אילו תמונות כויל ה-INT8, ומדדתם דיוק אחרי הכיול?'),
   H('תקציב latency'),
@@ -595,6 +611,14 @@ const CHAPTERS=[
 /* ---------------- CH9 ---------------- */
 {id:'ch9',icon:'manage',title:'לנהל את הפרויקט',short:'80% דאטה · flywheel · drift',lab:'gantt',
  sections:[
+  H('מחזור החיים המלא'),
+  UL('<b>1. דרישות</b> — מחלקות, טווחים, סנסור, חומרת יעד, latency ו-FP/שעה מותרים — במספרים',
+     '<b>2. דאטה ותיוג</b> — כולל "תרחישי חובה": לילה, ערפל, טווח רחוק, רקעים קשים',
+     '<b>3. Baseline</b> — מודל pretrained + כיול, לפני כל פיתוח מקורי',
+     '<b>4. הערכה</b> — טבלה אחת: mAP (עם סף), Recall, FP/שעה, latency על היעד',
+     '<b>5. איטרציות</b> — error analysis → דאטה ממוקד → סף → מודל, בסדר הזה',
+     '<b>6. פיילוט</b> — מדידה "כמו בשטח", לא רק על dataset',
+     '<b>7. פריסה וניטור</b> — drift, ביצועים, מתי מאמנים מחדש'),
   H('הגאנט האמיתי'),
   P('אנדרו נג: מפתחי AI מבלים בערך <b>80% מהזמן על דאטה</b> (מספר שחוזר הרבה — התייחסו אליו כאצבע, לא כמדידה). מחקר של Google מצא ש-92% מהפייפליינים סובלים מ"מפלי דאטה". גאנט שמקדיש את רוב הזמן ל"אימון וכיוונון" בנוי הפוך.'),
   T('TRAP-17','גאנט שבו "אימון" הוא הפעילות הגדולה בנוי הפוך למציאות. אם רוב הזמן לא הולך לדאטה — משהו לא מובן נכון.','איך מתחלק הזמן בגאנט בין דאטה, אימון ואינטגרציה — ולמה?'),
@@ -724,6 +748,38 @@ const BOSSES=[
 
 /* map: which node id comes after each chapter, in display order */
 const SEQUENCE=['ch1','ch2','ch3','ch4','ch5','b1','ch6','ch7','ch8','b2','ch9','b3'];
+
+/* ---------------- GLOSSARY ---------------- */
+const GLOSSARY=[
+ ['Object Detection','זיהוי וגילוי עצמים','קלט: פריים; פלט: רשימת עצמים, כל אחד עם מחלקה ותיבה.'],
+ ['Bounding Box','תיבה תוחמת','ארבעה מספרים שתוחמים עצם בתמונה.'],
+ ['Classification','סיווג','תווית אחת לכל התמונה — בלי "איפה".'],
+ ['Segmentation','פילוח','מסכה פיקסל-לפיקסל — מדויק מתיבה, יקר ממנה.'],
+ ['IoU','חפיפת תיבות','שטח החיתוך חלקי שטח האיחוד, 0–1; סף 0.5 = "פגיעה".'],
+ ['Precision','דיוק התרעות','כמה מההתרעות היו אמיתיות.'],
+ ['Recall','כיסוי','כמה מהעצמים שהיו — נתפסו.'],
+ ['mAP','ציון מסכם','שטח מתחת לעקומת Precision-Recall; חסר משמעות בלי סף IoU מוצהר.'],
+ ['FP / שעה','התרעות שווא לשעה','המדד שהמפעיל מרגיש; נמדד על וידאו רציף ריק.'],
+ ['NMS','דילול תיבות','מוחק תיבות כפולות על אותו עצם; שלב postprocess שעולה זמן.'],
+ ['Anchor','תיבת ייחוס','תבניות תיבה קבועות שהרשת מתקנת; דגמים חדשים ויתרו עליהן (anchor-free).'],
+ ['Backbone','עמוד שדרה','חלק הרשת שמחלץ מאפיינים מהתמונה — קונבולוציות מוערמות.'],
+ ['FPN / Neck','צוואר','ממזג סקאלות כדי לתפוס עצמים קטנים וגדולים יחד.'],
+ ['One-Stage / Two-Stage','משפחות גלאים','YOLO מהיר וישיר; Faster R-CNN דו-שלבי, מדויק-היסטורית ואיטי יותר.'],
+ ['Epoch','סיבוב אימון','מעבר מלא אחד על כל דאטת האימון.'],
+ ['Overfitting','שינון','המודל לומד את דאטת האימון בע"פ ומפסיק להכליל; val loss מתהפך למעלה.'],
+ ['Frame Leakage','דליפת פריימים','פריימים מאותו סרטון ב-train וב-test → mAP מנופח.'],
+ ['Domain Gap','פער תחום','דאטה שלא מהסנסור/תנאי היעד → צניחת דיוק בשטח.'],
+ ['Tiling / SAHI','אריחים','חיתוך הפריים במקום כיווץ; מציל עצמים קטנים, עולה פי 4–9 בזמן.'],
+ ['Tracking','מעקב','שיוך זיהויים בין פריימים → זהות, מסלול ומהירות.'],
+ ['ID Switch','החלפת זהות','ה-tracker מחליף זהויות בין שני עצמים, למשל בחצייה.'],
+ ['Kalman Filter','מסנן קלמן','ניבוי מיקום לפי מהירות + עדכון לפי מדידה; שורד פספוסי גילוי.'],
+ ['ONNX / TensorRT','שרשרת המרה','מהמודל המאומן ל-engine מהיר על חומרת היעד.'],
+ ['Quantization','קיטוע דיוק','FP16 כמעט חינם; INT8 מהיר אך דורש כיול — ויכול להישבר בשקט.'],
+ ['Latency','השהיה','מהפריים ועד ההחלטה, ב-ms; נמדד על חומרת היעד בלבד.'],
+ ['Data Flywheel','גלגל דאטה','פריסה → איסוף כשלים → תיוג ממוקד → אימון → פריסה.'],
+ ['Drift','סחיפה','העולם משתנה (עונה, דגם רחפן חדש) והמודל נשחק בשקט.'],
+ ['Focal Loss','מיקוד באבודים','מנגנון שמפצה על חוסר איזון קיצוני בין רקע לעצמים באימון.']
+];
 </script>
 <script>
 /* ============================ ENGINE ============================ */
@@ -997,30 +1053,55 @@ leak(body,done){
 /* --- Pixel Budget --- */
 pixel(body,done){
   body.innerHTML='<canvas></canvas>'
-    +'<div class="row"><label>טווח</label><input type="range" id="prng" min="200" max="3000" step="50" value="800"><span class="val" id="prngv">800מ׳</span></div>'
+    +'<div class="seg" id="pfov"><button data-f="1.0472">אבטחה 60°</button><button data-f="0.3491">בינוני 20°</button><button class="on" data-f="0.0873">זום צר 5°</button></div>'
+    +'<div class="row"><label>טווח</label><input type="range" id="prng" min="200" max="3000" step="25" value="400"><span class="val" id="prngv">400מ׳</span></div>'
+    +'<div class="seg" id="ptile"><button class="on" data-t="0">כיווץ ל-640</button><button data-t="1">Tiling — בלי כיווץ</button></div>'
     +'<div class="readout"><div class="stat"><span>בפריים 1080p</span><b id="pcap">—</b></div>'
-    +'<div class="stat"><span>אחרי resize 640</span><b id="pres">—</b></div></div>'
+    +'<div class="stat"><span>מה שהרשת רואה</span><b id="pres">—</b></div>'
+    +'<div class="stat"><span>עלות inference</span><b id="pcost">—</b></div></div>'
     +'<div class="verdict" id="pverd">—</div>'
-    +'<div class="hint">רחפן 0.35מ׳, מצלמה 60° HFOV. הרשת מכווצת ל-640px — כאן נולד ה"אזור האבוד".</div>';
-  const cv=$('canvas',body),w=560,h=170,ctx=setup(cv,w,h);let rng=800;
-  function calc(r){const cap=0.35*1920/(r*1.0472);return{cap,res:cap*640/1920}}
-  function draw(){ctx.fillStyle='#dfe9f2';ctx.fillRect(0,0,w,h);
-    const {cap,res}=calc(rng);
-    // draw drone at res size (scaled x6 for visibility) vs 10px threshold
-    ctx.fillStyle=C.ink2;ctx.font='11px sans-serif';ctx.textAlign='center';
-    ctx.fillText('גודל אחרי resize (מוגדל ×8 להמחשה)',w/2,20);
-    const s=Math.max(1,res)*8;ctx.fillStyle=res>=10?C.green:C.red;
-    ctx.save();ctx.translate(w/2,90);for(let a=0;a<4;a++){ctx.save();ctx.rotate(a*Math.PI/2+Math.PI/4);ctx.fillRect(s*0.2,-s*0.06,s*0.5,s*0.12);ctx.restore()}ctx.fillRect(-s*0.2,-s*0.2,s*0.4,s*0.4);ctx.restore();
-    // threshold ring 10px*8
-    ctx.strokeStyle=C.red;ctx.setLineDash([4,3]);ctx.beginPath();ctx.arc(w/2,90,40,0,7);ctx.stroke();ctx.setLineDash([]);
-    ctx.fillStyle=C.red;ctx.font='10px sans-serif';ctx.fillText('סף ~10px',w/2,148);
+    +'<div class="hint">רחפן 0.35מ׳. שחק עם טווח, עדשה ו-tiling: מצא עד איזה טווח כל שילוב מחזיק מעל הסף — ומה זה עולה בזמן ריצה.</div>';
+  const cv=$('canvas',body),w=560,h=190,ctx=setup(cv,w,h);
+  let rng=400,fov=0.0873,tile=0;
+  function calc(){const cap=0.35*1920/(rng*fov);const res=tile?cap:cap*640/1920;return{cap,res}}
+  function draw(){const {cap,res}=calc();
+    // sky gradient
+    const g=ctx.createLinearGradient(0,0,0,h);g.addColorStop(0,'#c8dcee');g.addColorStop(1,'#eaf2f8');
+    ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
+    const SC=6,cx=w/2,cy=92;
+    // threshold ring 10px * SC
+    ctx.strokeStyle=C.red;ctx.setLineDash([5,4]);ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.arc(cx,cy,10*SC/2,0,7);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle=C.red;ctx.font='10px sans-serif';ctx.textAlign='center';
+    ctx.fillText('סף זיהוי ~10px',cx,cy+10*SC/2+16);
+    // drone at res*SC
+    const s=Math.max(0.8,res)*SC;
+    const col=res>=10?C.green:(res>=6?C.orange:C.red);
+    ctx.fillStyle=col;
+    ctx.save();ctx.translate(cx,cy);
+    for(let a=0;a<4;a++){ctx.save();ctx.rotate(a*Math.PI/2+Math.PI/4);ctx.fillRect(s*0.14,-s*0.05,s*0.36,s*0.1);
+      ctx.beginPath();ctx.arc(s*0.5,0,s*0.11,0,7);ctx.stroke?0:0;ctx.fill();ctx.restore()}
+    ctx.fillRect(-s*0.16,-s*0.16,s*0.32,s*0.32);ctx.restore();
+    ctx.fillStyle=C.ink2;ctx.font='11px sans-serif';
+    ctx.fillText('מה שהרשת רואה (מוגדל ×'+SC+')',cx,20);
+    ctx.fillStyle=col;ctx.font='bold 13px monospace';ctx.fillText(res.toFixed(1)+'px',cx,cy-10*SC/2-10);
   }
-  const sl=$('#prng',body);
-  function up(){rng=+sl.value;$('#prngv',body).textContent=rng+'מ׳';const {cap,res}=calc(rng);
-    $('#pcap',body).textContent=cap.toFixed(1)+'px';$('#pres',body).textContent=res.toFixed(1)+'px';
-    const vd=$('#pverd',body);const ok=res>=10;vd.className='verdict '+(ok?'g':'r');
-    vd.textContent=ok?'מעל הסף — ניתן לזיהוי':'מתחת לסף — נעלם ברשת';draw();done()}
-  sl.addEventListener('input',up);up();
+  function up(){const {cap,res}=calc();
+    $('#prngv',body).textContent=rng+'מ׳';
+    $('#pcap',body).textContent=cap.toFixed(1)+'px';
+    $('#pres',body).textContent=res.toFixed(1)+'px';
+    const cost=$('#pcost',body);cost.textContent=tile?'×9~':'×1';cost.style.color=tile?C.red:C.green;
+    const vd=$('#pverd',body);
+    if(res>=10){vd.className='verdict g';vd.textContent='מעל הסף — ניתן לזיהוי'+(tile?' (אבל שילמת פי ~9 בזמן — TRAP-15)':'')}
+    else if(res>=6){vd.className='verdict r';vd.style.borderColor=C.orange;vd.style.color=C.orange;vd.style.background='rgba(217,119,6,.1)';vd.textContent='גבולי — זיהוי לא-עקבי; ציפייה ל-recall נמוך'}
+    else{vd.className='verdict r';vd.style=''; vd.textContent=(cap<6?'אבוד כבר בחיישן — שום רשת לא תציל; זו בעיית עדשה/טווח':'קיים בפריים אבל נעלם בכיווץ — ה"אזור האבוד"; נסה tiling')}
+    draw();done()}
+  $('#pfov',body).addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+    $$('#pfov button',body).forEach(x=>x.classList.remove('on'));b.classList.add('on');fov=+b.dataset.f;up()});
+  $('#ptile',body).addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+    $$('#ptile button',body).forEach(x=>x.classList.remove('on'));b.classList.add('on');tile=+b.dataset.t;up()});
+  $('#prng',body).addEventListener('input',e=>{rng=+e.target.value;up()});
+  up();
 },
 /* --- Threshold Playground --- */
 thresh(body,done){
@@ -1280,8 +1361,21 @@ function completeChapter(ch){
   if(first){S.xp+=45;xpPop(45)}
   save();closeReader();renderPath();toast(first?'פרק הושלם! +45★':'הושלם');
 }
-function closeReader(){reader.classList.remove('on');document.body.style.overflow=''}
+function closeReader(){reader.classList.remove('on');document.body.style.overflow='';$('.ovfoot').style.display=''}
 $('#readerClose').addEventListener('click',closeReader);
+
+/* ---- Glossary (reuses reader overlay, no footer gating) ---- */
+function openGlossary(){
+  curCh=null;
+  $('#readerTitle').firstChild.textContent='מילון מונחים';
+  $('#readerSub').textContent='Glossary · '+GLOSSARY.length+' מונחים · משפט אחד לכל מונח';
+  $('#stepDots').innerHTML='';$('.ovfoot').style.display='none';
+  rbody.innerHTML=GLOSSARY.map(g=>
+    '<div class="term"><b>'+g[0]+(g[1]?' · '+g[1]:'')+'</b><span>'+g[2]+'</span></div>').join('');
+  $('#readerScroll').scrollTop=0;
+  reader.classList.add('on');document.body.style.overflow='hidden';
+}
+$('#glossBtn').addEventListener('click',openGlossary);
 
 /* ============================ BOSS ENGINE ============================ */
 const sheet=$('#bossSheet'),chatEl=$('#bossChat'),choicesEl=$('#bossChoices');
@@ -1344,7 +1438,7 @@ function xpPop(n){const el=document.createElement('div');el.className='xppop';el
 /* ============================ INIT ============================ */
 renderPath();
 /* expose for QA/debug (harmless in standalone app) */
-try{Object.assign(window,{CHAPTERS,BOSSES,LABS,FIGS,IC,SEQUENCE});}catch(_){}
+try{Object.assign(window,{CHAPTERS,BOSSES,LABS,FIGS,IC,SEQUENCE,GLOSSARY});}catch(_){}
 </script>
 </body>
 </html>
